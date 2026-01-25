@@ -1,10 +1,10 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.PlayerFilterDto;
-import com.example.demo.dto.PutPlayerDto;
-import com.example.demo.entity.Player;
+import com.example.demo.controller.dto.*;
+import com.example.demo.eception.PlayerException;
 import com.example.demo.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,11 +17,6 @@ import java.util.List;
 @Validated
 public class PlayerController {
 
-    // TODO spring validation обновление img_4
-    // TODO img_3 img_5 - 404 400
-    
-    // TODO untilNextTime (readme.md)
-
     private final PlayerService playerService;
 
     @Autowired
@@ -29,34 +24,43 @@ public class PlayerController {
         this.playerService = playerService;
     }
 
-    // TODO на каждый слой, свой тип/сущность/дто (реквест/респонс)
     @GetMapping
-    public List<Player> getPlayers(@ModelAttribute PlayerFilterDto playerFilterDto) {
-        return playerService.findPlayers(playerFilterDto);
+    public List<GetPlayersResponse> getPlayers(@ModelAttribute GetPlayersRequest getPlayersRequest) {
+        return playerService.findPlayers(getPlayersRequest);
     }
 
     @GetMapping("/count")
-    public Integer getPlayersCount(@ModelAttribute PlayerFilterDto playerFilterDto) {
-        return playerService.countPlayers(playerFilterDto);
+    public Integer getPlayersCount(@ModelAttribute GetPlayersRequest getPlayersRequest) {
+        return playerService.countPlayers(getPlayersRequest);
     }
 
     @PostMapping
-    public Player createPlayer(@Valid @RequestBody Player player) {
-        return playerService.savePlayer(player);
+    public PostPlayerResponse createPlayer(@Valid @RequestBody PostPlayerRequest postPlayerRequest) {
+        return playerService.createPlayer(postPlayerRequest);
     }
 
     @GetMapping("/{id}")
-    public Player getPlayer(@PathVariable("id") @Positive(message = "id должно быть положительным числом") Long id) {
+    public GetPlayersResponse getPlayer(@PathVariable("id") @Positive(message = "id должно быть положительным числом") Long id) {
         return playerService.findPlayer(id);
     }
 
     @PostMapping("/{id}")
-    public Player putPlayer(@PathVariable Long id, @RequestBody PutPlayerDto playerUpdates) {
-        return playerService.updatePlayer(id, playerUpdates);
+    public PutPlayerResponse updatePlayer(@PathVariable Long id, @RequestBody PutPlayerRequest putPlayerRequest) {
+        return playerService.updatePlayer(id, putPlayerRequest);
     }
 
     @DeleteMapping("/{id}")
     public void deletePlayer(@PathVariable Long id) {
         playerService.delete(id);
+    }
+
+    @ExceptionHandler(PlayerException.NotFound.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public void playerNotFoundHandler() {
+    }
+
+    @ExceptionHandler(PlayerException.BadRequest.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public void badRequestHandler() {
     }
 }

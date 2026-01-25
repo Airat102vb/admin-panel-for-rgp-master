@@ -1,28 +1,35 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.PlayerFilterDto;
-import com.example.demo.dto.PutPlayerDto;
-import com.example.demo.entity.Player;
-import com.example.demo.entity.Profession;
-import com.example.demo.entity.Race;
+import com.example.demo.controller.dto.*;
+import com.example.demo.eception.PlayerException;
+import com.example.demo.filter.Profession;
+import com.example.demo.filter.Race;
+import com.example.demo.mapper.GetPlayersMapper;
+import com.example.demo.mapper.PostPlayerMapper;
+import com.example.demo.mapper.PutPlayerMapper;
+import com.example.demo.repository.PlayerRepository;
+import com.example.demo.repository.entity.Player;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
-    // TODO перенсти в репозиторий
-    private AtomicLong idGenerator = new AtomicLong(1);
-    private final Map<Long, Player> playersDb = new ConcurrentHashMap<>();
+    private final PlayerRepository playerRepository;
+
+    @Autowired
+    public PlayerServiceImpl(PlayerRepository playerRepository) {
+        this.playerRepository = playerRepository;
+    }
 
     @PostConstruct
     public void init() {
-        for (int i = 0; i < 5000; i++) {
-            Player player = new Player();
+        for (int i = 0; i < 500; i++) {
+            PostPlayerRequest player = new PostPlayerRequest();
             player.setName("Name" + i);
             player.setTitle("Title" + i);
             player.setRace(Race.ELF);
@@ -30,96 +37,49 @@ public class PlayerServiceImpl implements PlayerService {
             player.setBirthday(253465656L + i);
             player.setExperience(i);
 
-            savePlayer(player);
+            createPlayer(player);
         }
     }
 
     @Override
-    public Player savePlayer(Player player) {
-        long id = idGenerator.getAndIncrement();
-        player.setId(id);
-        playersDb.put(id, player);
-        return player;
+    public PostPlayerResponse createPlayer(PostPlayerRequest postPlayerRequest) {
+        Player newPlayer = playerRepository.savePlayer(PostPlayerMapper.toPlayer(postPlayerRequest));
+        return GetPlayersMapper.toPostPlayerResponse(newPlayer);
     }
 
     @Override
-    public List<Player> findPlayers(PlayerFilterDto playerFilterDto) {
-
-        // TODO Comparator по названию
-        // TODO сортировка в репозиторий, филтрация
-
-        // TODO стримы, разбение дороже для джава
-
-        // TODO филтровать раньше сравнение
-        // TODO убрать дублирование с каунт
-
-        Collection<Player> players = playersDb
-                .values()
+    public List<GetPlayersResponse> findPlayers(GetPlayersRequest getPlayersRequest) {
+        return playerRepository
+                .selectPlayers(GetPlayersMapper.toSelectPlayersEntity(getPlayersRequest))
                 .stream()
-                .sorted(switch (playerFilterDto.getOrder().getFieldName()) {
-                    case "name" -> Comparator.comparing(Player::getName);
-                    case "experience" -> Comparator.comparing(Player::getExperience);
-                    case "birthday" -> Comparator.comparing(Player::getBirthday);
-                    case "level" -> Comparator.comparing(Player::getLevel);
-                    default -> Comparator.comparing(Player::getId);
-                })
+                .map(GetPlayersMapper::toGetPlayerResponse)
                 .toList();
-
-        // TODO добавить все поля в фильтр
-        List<Player> filteredResult = players
-                .stream()
-                .filter(player -> Objects.isNull(playerFilterDto.getName()) || player.getName().contains(playerFilterDto.getName()))
-                .filter(player -> Objects.isNull(playerFilterDto.getTitle()) || player.getTitle().contains(playerFilterDto.getTitle()))
-                .toList();
-
-        List<Player> pagedResult = filteredResult
-                .stream()
-                .skip(playerFilterDto.getPageNumber() == 0 ? 0 : (long) playerFilterDto.getPageNumber() * playerFilterDto.getPageSize())
-                .limit((long) playerFilterDto.getPageSize())
-                .toList();
-
-        return pagedResult;
     }
 
     @Override
-    public Integer countPlayers(PlayerFilterDto playerFilterDto) {
-        Collection<Player> players = playersDb
-                .values()
-                .stream()
-                .sorted(Comparator.comparing(order -> playerFilterDto.getOrder()))
-                .toList();
-
-        List<Player> filteredResult = players
-                .stream()
-                .filter(player -> Objects.isNull(playerFilterDto.getName()) || player.getName().contains(playerFilterDto.getName()))
-                .filter(player -> Objects.isNull(playerFilterDto.getTitle()) || player.getTitle().contains(playerFilterDto.getTitle()))
-                .toList();
-
-        return filteredResult.size();
+    public Integer countPlayers(GetPlayersRequest getPlayersRequest) {
+        return playerRepository.countPlayers(GetPlayersMapper.toSelectPlayersEntity(getPlayersRequest));
     }
 
     @Override
-    public Player findPlayer(Long id) {
-        return playersDb.get(id);
+    public GetPlayersResponse findPlayer(Long id) {
+        Player player = playerRepository.selectPlayer(id);
+
+        if (Objects.isNull(player)) {
+            throw new PlayerException.NotFound();
+        }
+
+        return GetPlayersMapper.toGetPlayerResponse(player);
     }
 
     @Override
-    public Player updatePlayer(Long id, PutPlayerDto playerUpdates) {
-        Player player = playersDb.get(id);
-
-        player.setName(playerUpdates.getName());
-        player.setTitle(playerUpdates.getTitle());
-        player.setBirthday(playerUpdates.getBirthday());
-        player.setRace(playerUpdates.getRace());
-        player.setProfession(playerUpdates.getProfession());
-        player.setBanned(playerUpdates.getBanned());
-        player.setExperience(playerUpdates.getExperience());
-
-        return player;
+    public PutPlayerResponse updatePlayer(Long id, PutPlayerRequest playerUpdates) {
+        return PutPlayerMapper
+                .toPutPlayerResponse(playerRepository.updatePlayer(id, PutPlayerMapper.toPlayer(playerUpdates)));
     }
 
     @Override
     public void delete(Long id) {
-        playersDb.remove(id);
+        playerRepository.deletePlayer(id);
     }
 }

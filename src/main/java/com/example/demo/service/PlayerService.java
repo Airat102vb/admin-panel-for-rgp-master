@@ -1,22 +1,20 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.PlayerFilterDto;
-import com.example.demo.dto.PutPlayerDto;
-import com.example.demo.entity.Player;
+import com.example.demo.controller.dto.*;
 
 import java.util.List;
 
 public interface PlayerService {
 
-    Player savePlayer(Player player);
+    PostPlayerResponse createPlayer(PostPlayerRequest postPlayerRequest);
 
-    List<Player> findPlayers(PlayerFilterDto playerFilterDto);
+    List<GetPlayersResponse> findPlayers(GetPlayersRequest getPlayersRequest);
 
-    Integer countPlayers(PlayerFilterDto playerFilterDto);
+    Integer countPlayers(GetPlayersRequest getPlayersRequest);
 
-    Player findPlayer(Long id);
+    GetPlayersResponse findPlayer(Long id);
 
-    Player updatePlayer(Long id, PutPlayerDto playerUpdates);
+    PutPlayerResponse updatePlayer(Long id, PutPlayerRequest playerUpdates);
 
     void delete(Long id);
 }
