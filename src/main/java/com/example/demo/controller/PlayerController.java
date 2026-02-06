@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
@@ -59,7 +60,7 @@ public class PlayerController {
     public void playerNotFoundHandler() {
     }
 
-    @ExceptionHandler(PlayerException.BadRequest.class)
+    @ExceptionHandler({PlayerException.BadRequest.class, ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void badRequestHandler() {
     }

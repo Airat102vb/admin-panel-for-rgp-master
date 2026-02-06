@@ -3,7 +3,7 @@ package com.example.demo.mapper;
 import com.example.demo.controller.dto.PostPlayerRequest;
 import com.example.demo.repository.entity.Player;
 
-import static com.example.demo.utils.CommonUtils.*;
+import static com.example.demo.utils.CommonUtils.convertLongToLocalDate;
 
 public class PostPlayerMapper {
 
@@ -16,8 +16,6 @@ public class PostPlayerMapper {
         player.setBirthday(convertLongToLocalDate(postPlayerRequest.getBirthday()));
         player.setBanned(postPlayerRequest.getBanned());
         player.setExperience(postPlayerRequest.getExperience());
-        player.setLevel(calculateLevel(postPlayerRequest.getExperience()));
-        player.setUntilNextLevel(calculateUntilNextLevel(0, postPlayerRequest.getExperience()));
 
         return player;
     }

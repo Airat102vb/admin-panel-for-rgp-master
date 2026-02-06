@@ -33,8 +33,7 @@ public class PostPlayerRequest {
     Boolean banned = false;
 
     @NotNull
-    @Min(0)
-    @Max(70)
+    @Digits(integer = 7, fraction = 0)
     Integer experience = 0;
 
 }

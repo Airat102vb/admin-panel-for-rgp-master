@@ -23,8 +23,8 @@ public class SelectPlayers {
     Integer maxExperience;
     Integer minLevel;
     Integer maxLevel;
-    PlayerOrder order = PlayerOrder.ID;
-    Integer pageNumber = 0;
-    Integer pageSize = 3;
+    PlayerOrder order;
+    Integer pageNumber;
+    Integer pageSize;
 
 }

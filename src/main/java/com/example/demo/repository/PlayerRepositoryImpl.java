@@ -27,18 +27,20 @@ public class PlayerRepositoryImpl implements PlayerRepository {
     @Override
     public List<Player> selectPlayers(SelectPlayers selectPlayers) {
 
-        // TODO Comparator по названию
+        Comparator<Player> comparator = switch (selectPlayers.getOrder().getFieldName()) {
+            case "name" -> Comparator.comparing(Player::getName);
+            case "experience" -> Comparator.comparing(Player::getExperience);
+            case "birthday" -> Comparator.comparing(Player::getBirthday);
+            case "level" -> Comparator.comparing(Player::getLevel);
+            default -> Comparator.comparing(Player::getId);
+        };
+
+        comparator = comparator.thenComparing(Player::getId);
 
         return filter(playersDb.values(), selectPlayers)
-                .sorted(switch (selectPlayers.getOrder().getFieldName()) {
-                    case "name" -> Comparator.comparing(Player::getName);
-                    case "experience" -> Comparator.comparing(Player::getExperience);
-                    case "birthday" -> Comparator.comparing(Player::getBirthday);
-                    case "level" -> Comparator.comparing(Player::getLevel);
-                    default -> Comparator.comparing(Player::getId);
-                })
-                .skip(selectPlayers.getPageNumber() == 0 ? 0 : (long) selectPlayers.getPageNumber() * selectPlayers.getPageSize())
-                .limit((long) selectPlayers.getPageSize())
+                .sorted(comparator)
+                .skip((long) selectPlayers.getPageNumber() * selectPlayers.getPageSize())
+                .limit(selectPlayers.getPageSize())
                 .toList();
     }
 
@@ -63,29 +65,29 @@ public class PlayerRepositoryImpl implements PlayerRepository {
         if (Objects.nonNull(playerUpdates.getName())) {
             player.setName(playerUpdates.getName());
         }
-
         if (Objects.nonNull(playerUpdates.getTitle())) {
             player.setTitle(playerUpdates.getTitle());
         }
-
         if (Objects.nonNull(playerUpdates.getRace())) {
             player.setRace(playerUpdates.getRace());
         }
-
         if (Objects.nonNull(playerUpdates.getProfession())) {
             player.setProfession(playerUpdates.getProfession());
         }
-
         if (Objects.nonNull(playerUpdates.getBirthday())) {
             player.setBirthday(playerUpdates.getBirthday());
         }
-
         if (Objects.nonNull(playerUpdates.getBanned())) {
             player.setBanned(playerUpdates.getBanned());
         }
-
         if (Objects.nonNull(playerUpdates.getExperience())) {
             player.setExperience(playerUpdates.getExperience());
+        }
+        if (Objects.nonNull(playerUpdates.getLevel())) {
+            player.setLevel(playerUpdates.getLevel());
+        }
+        if (Objects.nonNull(playerUpdates.getUntilNextLevel())) {
+            player.setUntilNextLevel(playerUpdates.getUntilNextLevel());
         }
 
         return player;
