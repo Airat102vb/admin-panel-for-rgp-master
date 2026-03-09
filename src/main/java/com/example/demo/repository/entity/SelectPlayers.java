@@ -18,7 +18,7 @@ public class SelectPlayers {
     Profession profession;
     LocalDate after;
     LocalDate before;
-    Boolean banned = false;
+    Boolean banned;
     Integer minExperience;
     Integer maxExperience;
     Integer minLevel;

@@ -1,7 +1,7 @@
 package com.example.demo;
 
+import com.example.demo.controller.dto.CreatePlayerRequest;
 import com.example.demo.controller.dto.GetPlayersResponse;
-import com.example.demo.controller.dto.PostPlayerRequest;
 import com.example.demo.controller.dto.PostPlayerResponse;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
@@ -12,15 +12,12 @@ import com.example.demo.service.PlayerServiceImpl;
 import com.example.demo.utils.CommonUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -31,7 +28,7 @@ public class PlayerServiceTest {
     @Autowired
     PlayerService playerService;
 
-    @MockBean
+    @MockitoBean
     PlayerRepository playerRepository;
 
     @Autowired
@@ -40,11 +37,11 @@ public class PlayerServiceTest {
     @Test
     public void createPlayerTest() {
         Player player = getPlayer();
-        Mockito.when(playerRepository.savePlayer(Mockito.any(Player.class))).thenReturn(player);
+//        Mockito.when(playerRepository.save(Mockito.any(Player.class))).thenReturn(player);
 
-        PostPlayerRequest postPlayerRequest = new PostPlayerRequest();
-        postPlayerRequest.setBirthday(birthDay);
-        PostPlayerResponse postPlayerResponse = playerServiceImpl.createPlayer(postPlayerRequest);
+        CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
+        createPlayerRequest.setBirthday(birthDay);
+        PostPlayerResponse postPlayerResponse = playerServiceImpl.createPlayer(createPlayerRequest);
 
         Assertions.assertThat(postPlayerResponse).isNotNull();
         Assertions.assertThat(postPlayerResponse.getId()).isEqualTo(player.getId());
@@ -62,7 +59,7 @@ public class PlayerServiceTest {
     @Test
     public void findPlayerTest() {
         Player player = getPlayer();
-        Mockito.when(playerRepository.selectPlayer(eq(1L))).thenReturn(player);
+//        Mockito.when(playerRepository.findById(eq(1L))).thenReturn(Optional.of(player));
 
         GetPlayersResponse playersResponse = playerService.findPlayer(1L);
 

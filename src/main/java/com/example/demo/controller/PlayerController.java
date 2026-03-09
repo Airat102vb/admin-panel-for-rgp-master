@@ -1,14 +1,11 @@
 package com.example.demo.controller;
 
 import com.example.demo.controller.dto.*;
-import com.example.demo.eception.PlayerException;
 import com.example.demo.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
@@ -31,13 +28,13 @@ public class PlayerController {
     }
 
     @GetMapping("/count")
-    public Integer getPlayersCount(@ModelAttribute GetPlayersRequest getPlayersRequest) {
+    public Long getPlayersCount(@ModelAttribute GetPlayersRequest getPlayersRequest) { // TODO тут отдельная dto
         return playerService.countPlayers(getPlayersRequest);
     }
 
-    @PostMapping
-    public PostPlayerResponse createPlayer(@Valid @RequestBody PostPlayerRequest postPlayerRequest) {
-        return playerService.createPlayer(postPlayerRequest);
+    @PostMapping("/")
+    public PostPlayerResponse createPlayer(@Valid @RequestBody CreatePlayerRequest createPlayerRequest) {
+        return playerService.createPlayer(createPlayerRequest);
     }
 
     @GetMapping("/{id}")
@@ -46,22 +43,12 @@ public class PlayerController {
     }
 
     @PostMapping("/{id}")
-    public PutPlayerResponse updatePlayer(@PathVariable Long id, @RequestBody PutPlayerRequest putPlayerRequest) {
-        return playerService.updatePlayer(id, putPlayerRequest);
+    public PutPlayerResponse updatePlayer(@PathVariable Long id, @RequestBody UpdatePlayerRequest updatePlayerRequest) {
+        return playerService.updatePlayer(id, updatePlayerRequest);
     }
 
     @DeleteMapping("/{id}")
     public void deletePlayer(@PathVariable Long id) {
         playerService.delete(id);
-    }
-
-    @ExceptionHandler(PlayerException.NotFound.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void playerNotFoundHandler() {
-    }
-
-    @ExceptionHandler({PlayerException.BadRequest.class, ConstraintViolationException.class})
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public void badRequestHandler() {
     }
 }

@@ -92,4 +92,44 @@ public class GetPlayersMapper {
 
         return getPlayersResponse;
     }
+
+    public static Player toPlayerEntity(GetPlayersRequest getPlayersRequest) {
+        Player player = new Player();
+
+        if (Objects.nonNull(getPlayersRequest.getName())) {
+            player.setName(getPlayersRequest.getName());
+        }
+        if (Objects.nonNull(getPlayersRequest.getTitle())) {
+            player.setTitle(getPlayersRequest.getTitle());
+        }
+        if (Objects.nonNull(getPlayersRequest.getRace())) {
+            player.setRace(getPlayersRequest.getRace());
+        }
+        if (Objects.nonNull(getPlayersRequest.getProfession())) {
+            player.setProfession(getPlayersRequest.getProfession());
+        }
+//        if (Objects.nonNull(getPlayersRequest.getAfter())) {
+//            player.setAfter(convertLongToLocalDate(getPlayersRequest.getAfter()));
+//        }
+//        if (Objects.nonNull(getPlayersRequest.getBefore())) {
+//            player.setBefore(convertLongToLocalDate(getPlayersRequest.getBefore()));
+//        }
+        if (Objects.nonNull(getPlayersRequest.getBanned())) {
+            player.setBanned(getPlayersRequest.getBanned());
+        }
+//        if (Objects.nonNull(getPlayersRequest.getMinExperience())) {
+//            player.setMinExperience(getPlayersRequest.getMinExperience());
+//        }
+//        if (Objects.nonNull(getPlayersRequest.getMaxExperience())) {
+//            player.setMaxExperience(getPlayersRequest.getMaxExperience());
+//        }
+//        if (Objects.nonNull(getPlayersRequest.getMinLevel())) {
+//            player.setMinLevel(calculateLevel(getPlayersRequest.getMinLevel()));
+//        }
+//        if (Objects.nonNull(getPlayersRequest.getMaxLevel())) {
+//            player.setMaxLevel(calculateLevel(getPlayersRequest.getMaxLevel()));
+//        }
+
+        return player;
+    }
 }

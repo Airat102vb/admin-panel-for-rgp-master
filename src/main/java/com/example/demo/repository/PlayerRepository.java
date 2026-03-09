@@ -4,18 +4,19 @@ import com.example.demo.repository.entity.Player;
 import com.example.demo.repository.entity.SelectPlayers;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PlayerRepository {
 
-    Player savePlayer(Player player);
+    Player insert(Player player);
 
-    List<Player> selectPlayers(SelectPlayers selectPlayers);
+    Optional<Player> findById(Long id);
 
-    Integer countPlayers(SelectPlayers selectPlayers);
+    Player update(Player player);
 
-    Player selectPlayer(Long id);
+    void deleteById(Long id);
 
-    Player updatePlayer(Long id, Player player);
+    Long count(SelectPlayers selectPlayers);
 
-    void deletePlayer(Long id);
+    List<Player> findAll(SelectPlayers selectPlayers);
 }

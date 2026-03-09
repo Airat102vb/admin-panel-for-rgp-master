@@ -6,15 +6,15 @@ import java.util.List;
 
 public interface PlayerService {
 
-    PostPlayerResponse createPlayer(PostPlayerRequest postPlayerRequest);
+    PostPlayerResponse createPlayer(CreatePlayerRequest createPlayerRequest);
 
     List<GetPlayersResponse> findPlayers(GetPlayersRequest getPlayersRequest);
 
-    Integer countPlayers(GetPlayersRequest getPlayersRequest);
+    Long countPlayers(GetPlayersRequest getPlayersRequest);
 
     GetPlayersResponse findPlayer(Long id);
 
-    PutPlayerResponse updatePlayer(Long id, PutPlayerRequest playerUpdates);
+    PutPlayerResponse updatePlayer(Long id, UpdatePlayerRequest playerUpdates);
 
     void delete(Long id);
 }
