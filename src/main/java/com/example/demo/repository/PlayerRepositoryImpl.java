@@ -1,116 +1,147 @@
 package com.example.demo.repository;
 
-import com.example.demo.eception.PlayerException;
 import com.example.demo.repository.entity.Player;
 import com.example.demo.repository.entity.SelectPlayers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import static com.example.demo.repository.PlayerRepositorySql.sqlSelectAllPlayers;
 
 @Repository
-public class PlayerRepositoryImpl implements PlayerRepository {
+public class PlayerRepositoryImpl implements PlayerRepository { //интерфейс
 
-    private final AtomicLong idGenerator = new AtomicLong(1);
-    private final Map<Long, Player> playersDb = new ConcurrentHashMap<>();
+    private final JdbcClient jdbcClient;
 
-    @Override
-    public Player savePlayer(Player player) {
-        long id = idGenerator.getAndIncrement();
-        player.setId(id);
-        playersDb.put(id, player);
-        return player;
+    @Autowired
+    public PlayerRepositoryImpl(JdbcClient jdbcClient) {
+        this.jdbcClient = jdbcClient;
     }
 
-    @Override
-    public List<Player> selectPlayers(SelectPlayers selectPlayers) {
-
-        Comparator<Player> comparator = switch (selectPlayers.getOrder().getFieldName()) {
-            case "name" -> Comparator.comparing(Player::getName);
-            case "experience" -> Comparator.comparing(Player::getExperience);
-            case "birthday" -> Comparator.comparing(Player::getBirthday);
-            case "level" -> Comparator.comparing(Player::getLevel);
-            default -> Comparator.comparing(Player::getId);
-        };
-
-        comparator = comparator.thenComparing(Player::getId);
-
-        return filter(playersDb.values(), selectPlayers)
-                .sorted(comparator)
-                .skip((long) selectPlayers.getPageNumber() * selectPlayers.getPageSize())
-                .limit(selectPlayers.getPageSize())
-                .toList();
+    public Player insert(Player player) {
+        return jdbcClient.sql("""
+                        INSERT INTO player (name, title, race, profession, birthday, banned, experience, level, until_next_level) 
+                        VALUES (:name, :title, :race, :profession, :birthday, :banned, :experience, :level, :untilNextLevel)
+                        RETURNING *
+                        """)
+                .param("name", player.getName())
+                .param("title", player.getTitle())
+                .param("race", player.getRace().name())
+                .param("profession", player.getProfession().name())
+                .param("birthday", player.getBirthday())
+                .param("banned", player.getBanned())
+                .param("experience", player.getExperience())
+                .param("level", player.getLevel())
+                .param("untilNextLevel", player.getUntilNextLevel())
+                .query(Player.class)
+                .single();// TODO simpleJdbcInsert + select
     }
 
-    @Override
-    public Integer countPlayers(SelectPlayers selectPlayers) {
-        return filter(playersDb.values(), selectPlayers).toList().size();
+    public Optional<Player> findById(Long id) {
+        return jdbcClient.sql("SELECT * FROM player WHERE id = ?")
+                .param(id)
+                .query(Player.class)
+                .optional();
     }
 
-    @Override
-    public Player selectPlayer(Long id) {
-        return playersDb.get(id);
+    public Player update(Player player) {
+        return jdbcClient.sql("""
+                        UPDATE player
+                            SET
+                                name = COALESCE(:name, name),
+                                title = COALESCE(:title, title),
+                                race = COALESCE(:race, race),
+                                profession = COALESCE(:profession, profession),
+                                birthday = COALESCE(:birthday, birthday),
+                                banned = COALESCE(:banned, banned),
+                                experience = COALESCE(:experience, experience),
+                                level = COALESCE(:level, level),
+                                until_next_level = COALESCE(:untilNextLevel, until_next_level)
+                                WHERE id = :id
+                        RETURNING *
+                        """)
+                .param("id", player.getId())
+                .param("name", player.getName())
+                .param("title", player.getTitle())
+                .param("race", player.getRace().name())
+                .param("profession", player.getProfession().name())
+                .param("birthday", player.getBirthday())
+                .param("banned", player.getBanned())
+                .param("experience", player.getExperience())
+                .param("level", player.getLevel())
+                .param("untilNextLevel", player.getUntilNextLevel())
+                .query(Player.class)
+                .single();
     }
 
-    @Override
-    public Player updatePlayer(Long id, Player playerUpdates) {
-        Player player = playersDb.get(id);
-
-        if (Objects.isNull(player)) {
-            throw new PlayerException.NotFound();
-        }
-
-        if (Objects.nonNull(playerUpdates.getName())) {
-            player.setName(playerUpdates.getName());
-        }
-        if (Objects.nonNull(playerUpdates.getTitle())) {
-            player.setTitle(playerUpdates.getTitle());
-        }
-        if (Objects.nonNull(playerUpdates.getRace())) {
-            player.setRace(playerUpdates.getRace());
-        }
-        if (Objects.nonNull(playerUpdates.getProfession())) {
-            player.setProfession(playerUpdates.getProfession());
-        }
-        if (Objects.nonNull(playerUpdates.getBirthday())) {
-            player.setBirthday(playerUpdates.getBirthday());
-        }
-        if (Objects.nonNull(playerUpdates.getBanned())) {
-            player.setBanned(playerUpdates.getBanned());
-        }
-        if (Objects.nonNull(playerUpdates.getExperience())) {
-            player.setExperience(playerUpdates.getExperience());
-        }
-        if (Objects.nonNull(playerUpdates.getLevel())) {
-            player.setLevel(playerUpdates.getLevel());
-        }
-        if (Objects.nonNull(playerUpdates.getUntilNextLevel())) {
-            player.setUntilNextLevel(playerUpdates.getUntilNextLevel());
-        }
-
-        return player;
+    public void deleteById(Long id) {
+        jdbcClient.sql("DELETE FROM player WHERE id = ?")
+                .param(id)
+                .update();
     }
 
-    @Override
-    public void deletePlayer(Long id) {
-        playersDb.remove(id);
+    public Long count(SelectPlayers selectPlayers) {
+        return (long) jdbcClient.sql(getQueryFilters(selectPlayers))
+                .query(Player.class)
+                .list()
+                .size();
     }
 
-    private Stream<Player> filter(Collection<Player> players, SelectPlayers selectPlayers) {
-        return players
-                .stream()
-                .filter(player -> Objects.isNull(selectPlayers.getName()) || player.getName().contains(selectPlayers.getName()))
-                .filter(player -> Objects.isNull(selectPlayers.getTitle()) || player.getTitle().contains(selectPlayers.getTitle()))
-                .filter(player -> Objects.isNull(selectPlayers.getRace()) || player.getRace() == selectPlayers.getRace())
-                .filter(player -> Objects.isNull(selectPlayers.getProfession()) || player.getProfession() == selectPlayers.getProfession())
-                .filter(player -> Objects.isNull(selectPlayers.getAfter()) || player.getBirthday().isAfter(selectPlayers.getAfter()))
-                .filter(player -> Objects.isNull(selectPlayers.getBefore()) || player.getBirthday().isBefore(selectPlayers.getBefore()))
-                .filter(player -> Objects.isNull(selectPlayers.getBanned()) || player.getBanned() == selectPlayers.getBanned())
-                .filter(player -> Objects.isNull(selectPlayers.getMinExperience()) || player.getExperience() <= selectPlayers.getMinExperience())
-                .filter(player -> Objects.isNull(selectPlayers.getMaxExperience()) || player.getExperience() >= selectPlayers.getMaxExperience())
-                .filter(player -> Objects.isNull(selectPlayers.getMinLevel()) || player.getLevel() >= selectPlayers.getMinLevel())
-                .filter(player -> Objects.isNull(selectPlayers.getMaxLevel()) || player.getLevel() <= selectPlayers.getMaxLevel());
+    public List<Player> findAll(SelectPlayers selectPlayers) {
+        String query = getQueryFilters(selectPlayers);
+
+        return jdbcClient.sql(query + String.format(" ORDER BY %s ASC LIMIT %s OFFSET %s",
+                        selectPlayers.getOrder().getFieldName(),
+                        selectPlayers.getPageSize(),
+                        selectPlayers.getPageNumber() * selectPlayers.getPageSize()))
+                .query(Player.class)
+                .list();
+    }
+
+    private static String getQueryFilters(SelectPlayers selectPlayers) {
+        List<String> filters = new ArrayList<>();
+
+        if (Objects.nonNull(selectPlayers.getName())) {
+            filters.add("name ILIKE '%%%s%%'".formatted(selectPlayers.getName()));
+        }
+        if (Objects.nonNull(selectPlayers.getRace())) {
+            filters.add("race = %s ".formatted(selectPlayers.getRace()));
+        }
+        if (Objects.nonNull(selectPlayers.getProfession())) {
+            filters.add("profession = %s ".formatted(selectPlayers.getProfession()));
+        }
+        if (Objects.nonNull(selectPlayers.getBanned())) {
+            filters.add("banned = %s ".formatted(selectPlayers.getBanned()));
+        }
+        if (Objects.nonNull(selectPlayers.getTitle())) {
+            filters.add("title ILIKE '%%%s%%' ".formatted(selectPlayers.getTitle()));
+        }
+        if (Objects.nonNull(selectPlayers.getAfter())) {
+            filters.add("birthday >= %s ".formatted(selectPlayers.getAfter()));
+        }
+        if (Objects.nonNull(selectPlayers.getBefore())) {
+            filters.add("birthday <= %s ".formatted(selectPlayers.getBefore()));
+        }
+        if (Objects.nonNull(selectPlayers.getMinLevel())) {
+            filters.add("level >= %s ".formatted(selectPlayers.getMinLevel()));
+        }
+        if (Objects.nonNull(selectPlayers.getMaxLevel())) {
+            filters.add("level <= %s ".formatted(selectPlayers.getMaxLevel()));
+        }
+        if (Objects.nonNull(selectPlayers.getMinExperience())) {
+            filters.add("experience >= %s ".formatted(selectPlayers.getMinExperience()));
+        }
+        if (Objects.nonNull(selectPlayers.getMaxExperience())) {
+            filters.add("experience <= %s ".formatted(selectPlayers.getMaxExperience()));
+        }
+
+        return filters.isEmpty() ?
+                sqlSelectAllPlayers :
+                sqlSelectAllPlayers + " WHERE " + String.join(" AND ", filters);
     }
 }

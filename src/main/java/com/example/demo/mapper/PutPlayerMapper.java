@@ -1,12 +1,12 @@
 package com.example.demo.mapper;
 
-import com.example.demo.controller.dto.PutPlayerRequest;
+import com.example.demo.controller.dto.UpdatePlayerRequest;
 import com.example.demo.controller.dto.PutPlayerResponse;
 import com.example.demo.repository.entity.Player;
 
 import java.util.Objects;
 
-import static com.example.demo.utils.CommonUtils.convertLongToLocalDate;
+import static com.example.demo.utils.CommonUtils.*;
 
 public class PutPlayerMapper {
 
@@ -26,9 +26,7 @@ public class PutPlayerMapper {
         return putPlayerResponse;
     }
 
-    public static Player toPlayer(PutPlayerRequest playerUpdates) {
-        Player player = new Player();
-
+    public static void toPlayer(UpdatePlayerRequest playerUpdates, Player player) {
         if (Objects.nonNull(playerUpdates.getName())) {
             player.setName(playerUpdates.getName());
         }
@@ -57,6 +55,7 @@ public class PutPlayerMapper {
             player.setExperience(playerUpdates.getExperience());
         }
 
-        return player;
+        player.setLevel(calculateLevel(playerUpdates.getExperience()));
+        player.setUntilNextLevel(calculateUntilNextLevel(player.getLevel(), playerUpdates.getExperience()));
     }
 }

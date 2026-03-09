@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
 
 @Getter
 @Setter
-public class PutPlayerRequest {
+public class UpdatePlayerRequest {
 
     @Size(max = 12)
     String name;

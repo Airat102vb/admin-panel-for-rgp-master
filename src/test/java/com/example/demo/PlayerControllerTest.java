@@ -2,7 +2,7 @@ package com.example.demo;
 
 import com.example.demo.controller.PlayerController;
 import com.example.demo.controller.dto.*;
-import com.example.demo.eception.PlayerException;
+import com.example.demo.eception.PlayerNotFoundException;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
 import com.example.demo.service.PlayerService;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -27,7 +27,7 @@ public class PlayerControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     PlayerService playerService;
 
     @Autowired
@@ -65,7 +65,7 @@ public class PlayerControllerTest {
 
     @Test
     public void getCountPlayersTest() throws Exception {
-        Mockito.when(this.playerService.countPlayers(Mockito.any(GetPlayersRequest.class))).thenReturn(1);
+        Mockito.when(this.playerService.countPlayers(Mockito.any(GetPlayersRequest.class))).thenReturn(1L);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/rest/players/count"))
                 .andDo(print())
@@ -75,30 +75,30 @@ public class PlayerControllerTest {
 
     @Test
     public void createPlayerTest() throws Exception {
-        Mockito.when(this.playerService.createPlayer(Mockito.any(PostPlayerRequest.class))).thenReturn(createPostPlayerResponse());
+        Mockito.when(this.playerService.createPlayer(Mockito.any(CreatePlayerRequest.class))).thenReturn(createPostPlayerResponse());
 
-        PostPlayerRequest postPlayerRequest = new PostPlayerRequest();
-        postPlayerRequest.setName("Name");
-        postPlayerRequest.setTitle("Title");
-        postPlayerRequest.setRace(Race.ELF);
-        postPlayerRequest.setProfession(Profession.CLERIC);
-        postPlayerRequest.setBirthday(631929600000L);
-        postPlayerRequest.setBanned(false);
-        postPlayerRequest.setExperience(150);
+        CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
+        createPlayerRequest.setName("Name");
+        createPlayerRequest.setTitle("Title");
+        createPlayerRequest.setRace(Race.ELF);
+        createPlayerRequest.setProfession(Profession.CLERIC);
+        createPlayerRequest.setBirthday(631929600000L);
+        createPlayerRequest.setBanned(false);
+        createPlayerRequest.setExperience(150);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/rest/players")
                         .header("Content-type", "application/json;charset=UTF-8")
-                        .content(objectMapper.writeValueAsString(postPlayerRequest)))
+                        .content(objectMapper.writeValueAsString(createPlayerRequest)))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(postPlayerRequest.getName()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(postPlayerRequest.getTitle()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.race").value(postPlayerRequest.getRace().toString()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.profession").value(postPlayerRequest.getProfession().toString()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.birthday").value(postPlayerRequest.getBirthday()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.banned").value(postPlayerRequest.getBanned()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.experience").value(postPlayerRequest.getExperience()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.name").value(createPlayerRequest.getName()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value(createPlayerRequest.getTitle()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.race").value(createPlayerRequest.getRace().toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.profession").value(createPlayerRequest.getProfession().toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.birthday").value(createPlayerRequest.getBirthday()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.banned").value(createPlayerRequest.getBanned()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.experience").value(createPlayerRequest.getExperience()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.level").value(1))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.untilNextLevel").value(50));
     }
@@ -124,7 +124,7 @@ public class PlayerControllerTest {
 
     @Test
     public void updatePlayerTest() throws Exception {
-        Mockito.when(this.playerService.updatePlayer(eq(1L), Mockito.any(PutPlayerRequest.class))).thenReturn(createPutPlayerResponse());
+        Mockito.when(this.playerService.updatePlayer(eq(1L), Mockito.any(UpdatePlayerRequest.class))).thenReturn(createPutPlayerResponse());
 
         PutPlayerResponse putPlayerResponse = new PutPlayerResponse();
         putPlayerResponse.setName("Name");
@@ -160,7 +160,7 @@ public class PlayerControllerTest {
 
     @Test
     public void getPlayerNegativeTest() throws Exception {
-        Mockito.when(this.playerService.findPlayer(eq(1L))).thenThrow(new PlayerException.NotFound());
+        Mockito.when(this.playerService.findPlayer(eq(1L))).thenThrow(new PlayerNotFoundException());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/rest/players/1"))
                 .andExpect(MockMvcResultMatchers.status().isNotFound());
@@ -168,12 +168,12 @@ public class PlayerControllerTest {
 
     @Test
     public void createPlayerNegativeTest() throws Exception {
-        PostPlayerRequest postPlayerRequest = new PostPlayerRequest();
-        postPlayerRequest.setName("");
+        CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
+        createPlayerRequest.setName("");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/rest/players")
                         .header("Content-type", "application/json;charset=UTF-8")
-                        .content(objectMapper.writeValueAsString(postPlayerRequest)))
+                        .content(objectMapper.writeValueAsString(createPlayerRequest)))
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }

@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.controller.dto.*;
-import com.example.demo.eception.PlayerException;
+import com.example.demo.eception.PlayerNotFoundException;
 import com.example.demo.mapper.GetPlayersMapper;
 import com.example.demo.mapper.PostPlayerMapper;
 import com.example.demo.mapper.PutPlayerMapper;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.example.demo.utils.CommonUtils.calculateLevel;
 import static com.example.demo.utils.CommonUtils.calculateUntilNextLevel;
@@ -19,7 +20,7 @@ import static com.example.demo.utils.CommonUtils.calculateUntilNextLevel;
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
-    private final PlayerRepository playerRepository;
+    private PlayerRepository playerRepository;
 
     @Autowired
     public PlayerServiceImpl(PlayerRepository playerRepository) {
@@ -27,57 +28,52 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public PostPlayerResponse createPlayer(PostPlayerRequest postPlayerRequest) {
-        int level = calculateLevel(postPlayerRequest.getExperience());
-        int untilNextLevel = calculateUntilNextLevel(level, postPlayerRequest.getExperience());
+    public PostPlayerResponse createPlayer(CreatePlayerRequest createPlayerRequest) {
+        int level = calculateLevel(createPlayerRequest.getExperience());
+        int untilNextLevel = calculateUntilNextLevel(level, createPlayerRequest.getExperience());
 
-        Player newPlayer = PostPlayerMapper.toPlayer(postPlayerRequest);
+        Player newPlayer = PostPlayerMapper.toPlayer(createPlayerRequest);
         newPlayer.setLevel(level);
         newPlayer.setUntilNextLevel(untilNextLevel);
 
-        Player createdPlayer = playerRepository.savePlayer(newPlayer);
+        Player createdPlayer = playerRepository.insert(newPlayer);
         return GetPlayersMapper.toPostPlayerResponse(createdPlayer);
     }
 
     @Override
     public List<GetPlayersResponse> findPlayers(GetPlayersRequest getPlayersRequest) {
         return playerRepository
-                .selectPlayers(GetPlayersMapper.toSelectPlayersEntity(getPlayersRequest))
+                .findAll(GetPlayersMapper.toSelectPlayersEntity(getPlayersRequest))
                 .stream()
                 .map(GetPlayersMapper::toGetPlayerResponse)
                 .toList();
     }
 
     @Override
-    public Integer countPlayers(GetPlayersRequest getPlayersRequest) {
-        return playerRepository.countPlayers(GetPlayersMapper.toSelectPlayersEntity(getPlayersRequest));
+    public Long countPlayers(GetPlayersRequest getPlayersRequest) {
+        return playerRepository.count(GetPlayersMapper.toSelectPlayersEntity(getPlayersRequest));
     }
 
     @Override
     public GetPlayersResponse findPlayer(Long id) {
-        Player player = playerRepository.selectPlayer(id);
+        Optional<Player> player = playerRepository.findById(id);
 
         if (Objects.isNull(player)) {
-            throw new PlayerException.NotFound();
+            throw new PlayerNotFoundException();
         }
 
-        return GetPlayersMapper.toGetPlayerResponse(player);
+        return GetPlayersMapper.toGetPlayerResponse(player.get());
     }
 
     @Override
-    public PutPlayerResponse updatePlayer(Long id, PutPlayerRequest playerUpdates) {
-        int level = calculateLevel(playerUpdates.getExperience());
-        int untilNextLevel = calculateUntilNextLevel(level, playerUpdates.getExperience());
-
-        Player updatePlayer = PutPlayerMapper.toPlayer(playerUpdates);
-        updatePlayer.setLevel(level);
-        updatePlayer.setUntilNextLevel(untilNextLevel);
-
-        return PutPlayerMapper.toPutPlayerResponse(playerRepository.updatePlayer(id, updatePlayer));
+    public PutPlayerResponse updatePlayer(Long id, UpdatePlayerRequest playerUpdates) {
+        Player player = playerRepository.findById(id).orElseThrow(PlayerNotFoundException::new);
+        PutPlayerMapper.toPlayer(playerUpdates, player);
+        return PutPlayerMapper.toPutPlayerResponse(playerRepository.update(player));
     }
 
     @Override
     public void delete(Long id) {
-        playerRepository.deletePlayer(id);
+        playerRepository.deleteById(id);
     }
 }

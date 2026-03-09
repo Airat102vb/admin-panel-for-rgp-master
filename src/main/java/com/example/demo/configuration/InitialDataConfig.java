@@ -1,6 +1,6 @@
 package com.example.demo.configuration;
 
-import com.example.demo.controller.dto.PostPlayerRequest;
+import com.example.demo.controller.dto.CreatePlayerRequest;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
 import com.example.demo.service.PlayerService;
@@ -9,16 +9,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import javax.sql.DataSource;
-
 @Configuration
 public class InitialDataConfig {
 
     @Bean
-    @Profile("!test")
+    @Profile("test-data")
     public Object generateData(@Autowired PlayerService playerService) {
-        for (int i = 0; i < 500; i++) {
-            PostPlayerRequest player = new PostPlayerRequest();
+        for (int i = 0; i < 1; i++) {
+            CreatePlayerRequest player = new CreatePlayerRequest();
             player.setName("Name" + i);
             player.setTitle("Title" + i);
             player.setRace(Race.ELF);
