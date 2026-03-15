@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.controller.dto.*;
+import com.example.demo.mapper.ControllerServiceMapper;
 import com.example.demo.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -24,17 +25,17 @@ public class PlayerController {
 
     @GetMapping
     public List<GetPlayersResponse> getPlayers(@ModelAttribute GetPlayersRequest getPlayersRequest) {
-        return playerService.findPlayers(getPlayersRequest);
+        return playerService.findPlayers(ControllerServiceMapper.mapToGetPlayersDto(getPlayersRequest));
     }
 
     @GetMapping("/count")
-    public Long getPlayersCount(@ModelAttribute GetPlayersRequest getPlayersRequest) { // TODO тут отдельная dto
-        return playerService.countPlayers(getPlayersRequest);
+    public Long getPlayersCount(@ModelAttribute GetPlayersRequest getPlayersRequest) {
+        return playerService.countPlayers(ControllerServiceMapper.mapToGetPlayersDto(getPlayersRequest));
     }
 
     @PostMapping("/")
     public PostPlayerResponse createPlayer(@Valid @RequestBody CreatePlayerRequest createPlayerRequest) {
-        return playerService.createPlayer(createPlayerRequest);
+        return playerService.createPlayer(ControllerServiceMapper.mapToCreatePlayerDto(createPlayerRequest));
     }
 
     @GetMapping("/{id}")
@@ -44,7 +45,7 @@ public class PlayerController {
 
     @PostMapping("/{id}")
     public PutPlayerResponse updatePlayer(@PathVariable Long id, @RequestBody UpdatePlayerRequest updatePlayerRequest) {
-        return playerService.updatePlayer(id, updatePlayerRequest);
+        return playerService.updatePlayer(id, ControllerServiceMapper.mapToUpdatePlayerDto(updatePlayerRequest));
     }
 
     @DeleteMapping("/{id}")

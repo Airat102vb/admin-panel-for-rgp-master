@@ -3,6 +3,7 @@ package com.example.demo.configuration;
 import com.example.demo.controller.dto.CreatePlayerRequest;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
+import com.example.demo.mapper.ControllerServiceMapper;
 import com.example.demo.service.PlayerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +25,7 @@ public class InitialDataConfig {
             player.setBirthday(631_929_600_000L + 86_400_000L * i);
             player.setExperience(i);
 
-            playerService.createPlayer(player);
+            playerService.createPlayer(ControllerServiceMapper.mapToCreatePlayerDto(player));
         }
         return new Object();
     }

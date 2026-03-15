@@ -6,6 +6,9 @@ import com.example.demo.eception.PlayerNotFoundException;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
 import com.example.demo.service.PlayerService;
+import com.example.demo.service.dto.CreatePlayerDto;
+import com.example.demo.service.dto.GetPlayersDto;
+import com.example.demo.service.dto.UpdatePlayerDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -35,7 +38,7 @@ public class PlayerControllerTest {
 
     @Test
     public void getPlayersTest() throws Exception {
-        Mockito.when(this.playerService.findPlayers(Mockito.any(GetPlayersRequest.class))).thenReturn(getPlayers());
+        Mockito.when(this.playerService.findPlayers(Mockito.any(GetPlayersDto.class))).thenReturn(getPlayers());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/rest/players"))
                 .andDo(print())
@@ -65,7 +68,7 @@ public class PlayerControllerTest {
 
     @Test
     public void getCountPlayersTest() throws Exception {
-        Mockito.when(this.playerService.countPlayers(Mockito.any(GetPlayersRequest.class))).thenReturn(1L);
+        Mockito.when(this.playerService.countPlayers(Mockito.any(GetPlayersDto.class))).thenReturn(1L);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/rest/players/count"))
                 .andDo(print())
@@ -75,7 +78,7 @@ public class PlayerControllerTest {
 
     @Test
     public void createPlayerTest() throws Exception {
-        Mockito.when(this.playerService.createPlayer(Mockito.any(CreatePlayerRequest.class))).thenReturn(createPostPlayerResponse());
+        Mockito.when(this.playerService.createPlayer(Mockito.any(CreatePlayerDto.class))).thenReturn(createPostPlayerResponse());
 
         CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
         createPlayerRequest.setName("Name");
@@ -124,7 +127,7 @@ public class PlayerControllerTest {
 
     @Test
     public void updatePlayerTest() throws Exception {
-        Mockito.when(this.playerService.updatePlayer(eq(1L), Mockito.any(UpdatePlayerRequest.class))).thenReturn(createPutPlayerResponse());
+        Mockito.when(this.playerService.updatePlayer(eq(1L), Mockito.any(UpdatePlayerDto.class))).thenReturn(createPutPlayerResponse());
 
         PutPlayerResponse putPlayerResponse = new PutPlayerResponse();
         putPlayerResponse.setName("Name");

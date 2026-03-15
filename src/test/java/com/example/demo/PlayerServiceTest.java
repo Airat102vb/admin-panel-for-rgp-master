@@ -5,6 +5,7 @@ import com.example.demo.controller.dto.GetPlayersResponse;
 import com.example.demo.controller.dto.PostPlayerResponse;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
+import com.example.demo.mapper.ControllerServiceMapper;
 import com.example.demo.repository.PlayerRepository;
 import com.example.demo.repository.entity.Player;
 import com.example.demo.service.PlayerService;
@@ -41,7 +42,8 @@ public class PlayerServiceTest {
 
         CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
         createPlayerRequest.setBirthday(birthDay);
-        PostPlayerResponse postPlayerResponse = playerServiceImpl.createPlayer(createPlayerRequest);
+        PostPlayerResponse postPlayerResponse = playerServiceImpl
+                .createPlayer(ControllerServiceMapper.mapToCreatePlayerDto(createPlayerRequest));
 
         Assertions.assertThat(postPlayerResponse).isNotNull();
         Assertions.assertThat(postPlayerResponse.getId()).isEqualTo(player.getId());
