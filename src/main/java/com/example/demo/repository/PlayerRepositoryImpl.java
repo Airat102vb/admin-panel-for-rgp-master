@@ -4,12 +4,11 @@ import com.example.demo.repository.entity.Player;
 import com.example.demo.repository.entity.SelectPlayers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import javax.sql.DataSource;
+import java.util.*;
 
 import static com.example.demo.repository.PlayerRepositorySql.sqlSelectAllPlayers;
 
@@ -17,29 +16,41 @@ import static com.example.demo.repository.PlayerRepositorySql.sqlSelectAllPlayer
 public class PlayerRepositoryImpl implements PlayerRepository { //интерфейс
 
     private final JdbcClient jdbcClient;
+    private final DataSource dataSource;
 
     @Autowired
-    public PlayerRepositoryImpl(JdbcClient jdbcClient) {
+    public PlayerRepositoryImpl(JdbcClient jdbcClient, DataSource dataSource) {
         this.jdbcClient = jdbcClient;
+        this.dataSource = dataSource;
     }
 
     public Player insert(Player player) {
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource);
+        simpleJdbcInsert.setTableName("player");
+        simpleJdbcInsert.usingGeneratedKeyColumns("id");
+
+        String id = simpleJdbcInsert.executeAndReturnKey(
+                Map.of(
+                        "name", player.getName(),
+                        "title", player.getTitle(),
+                        "race", player.getRace().name(),
+                        "profession", player.getProfession().name(),
+                        "birthday", player.getBirthday(),
+                        "banned", player.getBanned(),
+                        "experience", player.getExperience(),
+                        "level", player.getLevel(),
+                        "until_next_level", player.getUntilNextLevel()
+                )
+        ).toString();
+
         return jdbcClient.sql("""
-                        INSERT INTO player (name, title, race, profession, birthday, banned, experience, level, until_next_level) 
-                        VALUES (:name, :title, :race, :profession, :birthday, :banned, :experience, :level, :untilNextLevel)
-                        RETURNING *
+                        SELECT id, name, title, race, profession, birthday, banned, experience, level, until_next_level 
+                        FROM player 
+                        WHERE id = ?
                         """)
-                .param("name", player.getName())
-                .param("title", player.getTitle())
-                .param("race", player.getRace().name())
-                .param("profession", player.getProfession().name())
-                .param("birthday", player.getBirthday())
-                .param("banned", player.getBanned())
-                .param("experience", player.getExperience())
-                .param("level", player.getLevel())
-                .param("untilNextLevel", player.getUntilNextLevel())
+                .param(id)
                 .query(Player.class)
-                .single();// TODO simpleJdbcInsert + select
+                .single();
     }
 
     public Optional<Player> findById(Long id) {
