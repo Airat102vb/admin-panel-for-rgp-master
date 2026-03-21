@@ -4,11 +4,12 @@ import com.example.demo.repository.entity.Player;
 import com.example.demo.repository.entity.SelectPlayers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static com.example.demo.repository.PlayerRepositorySql.sqlSelectAllPlayers;
 
