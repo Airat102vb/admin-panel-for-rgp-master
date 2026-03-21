@@ -89,7 +89,7 @@ public class PlayerControllerTest {
         createPlayerRequest.setBanned(false);
         createPlayerRequest.setExperience(150);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/rest/players")
+        mockMvc.perform(MockMvcRequestBuilders.post("/rest/players/")
                         .header("Content-type", "application/json;charset=UTF-8")
                         .content(objectMapper.writeValueAsString(createPlayerRequest)))
                 .andDo(print())
@@ -174,7 +174,7 @@ public class PlayerControllerTest {
         CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
         createPlayerRequest.setName("");
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/rest/players")
+        mockMvc.perform(MockMvcRequestBuilders.post("/rest/players/")
                         .header("Content-type", "application/json;charset=UTF-8")
                         .content(objectMapper.writeValueAsString(createPlayerRequest)))
                 .andDo(print())

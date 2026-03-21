@@ -13,12 +13,16 @@ import com.example.demo.service.PlayerServiceImpl;
 import com.example.demo.utils.CommonUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import java.util.Optional;
 import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -38,7 +42,7 @@ public class PlayerServiceTest {
     @Test
     public void createPlayerTest() {
         Player player = getPlayer();
-//        Mockito.when(playerRepository.save(Mockito.any(Player.class))).thenReturn(player);
+        Mockito.when(playerRepository.insert(Mockito.any(Player.class))).thenReturn(player);
 
         CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
         createPlayerRequest.setBirthday(birthDay);
@@ -61,7 +65,7 @@ public class PlayerServiceTest {
     @Test
     public void findPlayerTest() {
         Player player = getPlayer();
-//        Mockito.when(playerRepository.findById(eq(1L))).thenReturn(Optional.of(player));
+        Mockito.when(playerRepository.findById(eq(1L))).thenReturn(Optional.of(player));
 
         GetPlayersResponse playersResponse = playerService.findPlayer(1L);
 

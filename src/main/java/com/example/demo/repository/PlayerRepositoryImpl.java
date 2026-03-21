@@ -4,12 +4,11 @@ import com.example.demo.repository.entity.Player;
 import com.example.demo.repository.entity.SelectPlayers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import javax.sql.DataSource;
+import java.util.*;
 
 import static com.example.demo.repository.PlayerRepositorySql.sqlSelectAllPlayers;
 
@@ -17,29 +16,16 @@ import static com.example.demo.repository.PlayerRepositorySql.sqlSelectAllPlayer
 public class PlayerRepositoryImpl implements PlayerRepository { //интерфейс
 
     private final JdbcClient jdbcClient;
+    private final SimplePlayerJdbcInsert simplePlayerJdbcInsert;
 
     @Autowired
-    public PlayerRepositoryImpl(JdbcClient jdbcClient) {
+    public PlayerRepositoryImpl(JdbcClient jdbcClient, SimplePlayerJdbcInsert simplePlayerJdbcInsert) {
         this.jdbcClient = jdbcClient;
+        this.simplePlayerJdbcInsert = simplePlayerJdbcInsert;
     }
 
     public Player insert(Player player) {
-        return jdbcClient.sql("""
-                        INSERT INTO player (name, title, race, profession, birthday, banned, experience, level, until_next_level) 
-                        VALUES (:name, :title, :race, :profession, :birthday, :banned, :experience, :level, :untilNextLevel)
-                        RETURNING *
-                        """)
-                .param("name", player.getName())
-                .param("title", player.getTitle())
-                .param("race", player.getRace().name())
-                .param("profession", player.getProfession().name())
-                .param("birthday", player.getBirthday())
-                .param("banned", player.getBanned())
-                .param("experience", player.getExperience())
-                .param("level", player.getLevel())
-                .param("untilNextLevel", player.getUntilNextLevel())
-                .query(Player.class)
-                .single();// TODO simpleJdbcInsert + select
+        return simplePlayerJdbcInsert.insert(player);
     }
 
     public Optional<Player> findById(Long id) {
