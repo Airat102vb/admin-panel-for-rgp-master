@@ -6,17 +6,21 @@ import com.example.demo.controller.dto.PutPlayerResponse;
 import com.example.demo.eception.PlayerNotFoundException;
 import com.example.demo.mapper.ControllerServiceMapper;
 import com.example.demo.mapper.ServiceRepositoryMapper;
-import com.example.demo.repository.PlayerRepository;
+import com.example.demo.repository.PlayerRepositoryJpa;
 import com.example.demo.repository.entity.Player;
 import com.example.demo.service.dto.CreatePlayerDto;
 import com.example.demo.service.dto.GetPlayersDto;
 import com.example.demo.service.dto.PlayerDto;
 import com.example.demo.service.dto.UpdatePlayerDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static com.example.demo.utils.CommonUtils.calculateLevel;
@@ -25,11 +29,11 @@ import static com.example.demo.utils.CommonUtils.calculateUntilNextLevel;
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
-    private PlayerRepository playerRepository;
+    private PlayerRepositoryJpa playerRepositoryJpa;
 
     @Autowired
-    public PlayerServiceImpl(PlayerRepository playerRepository) {
-        this.playerRepository = playerRepository;
+    public PlayerServiceImpl(PlayerRepositoryJpa playerRepositoryJpa) {
+        this.playerRepositoryJpa = playerRepositoryJpa;
     }
 
     @Override
@@ -41,14 +45,23 @@ public class PlayerServiceImpl implements PlayerService {
         newPlayer.setLevel(level);
         newPlayer.setUntilNextLevel(untilNextLevel);
 
-        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto(playerRepository.insert(newPlayer));
+        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto(playerRepositoryJpa.save(newPlayer));
         return ControllerServiceMapper.mapToPostPlayerResponse(playerDto);
     }
 
     @Override
     public List<GetPlayersResponse> findPlayers(GetPlayersDto getPlayersDto) {
-        return playerRepository
-                .findAll(ServiceRepositoryMapper.mapToSelectPlayersEntity(getPlayersDto))
+        Specification<Player> searchSpec = UserSpecification.of(getPlayersDto);
+
+        Pageable pageable = PageRequest.of(
+                getPlayersDto.getPageNumber(),
+                getPlayersDto.getPageSize(),
+                Sort.by(getPlayersDto.getOrder().getFieldName()).ascending()
+        );
+
+        Page<Player> players = playerRepositoryJpa.findAll(searchSpec, pageable);
+
+        return players
                 .stream()
                 .map(ServiceRepositoryMapper::mapToPlayerDto)
                 .map(ControllerServiceMapper::mapToGetPlayersResponse)
@@ -57,14 +70,15 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Long countPlayers(GetPlayersDto getPlayersDto) {
-        return playerRepository.count(ServiceRepositoryMapper.mapToSelectPlayersEntity(getPlayersDto));
+        Specification<Player> searchSpec = UserSpecification.of(getPlayersDto);
+        return playerRepositoryJpa.count(searchSpec);
     }
 
     @Override
     public GetPlayersResponse findPlayer(Long id) {
-        Optional<Player> player = playerRepository.findById(id);
+        Optional<Player> player = playerRepositoryJpa.findById(id);
 
-        if (Objects.isNull(player)) {
+        if (player.isEmpty()) {
             throw new PlayerNotFoundException();
         }
 
@@ -74,14 +88,14 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public PutPlayerResponse updatePlayer(Long id, UpdatePlayerDto updatePlayerDto) {
-        Player player = playerRepository.findById(id).orElseThrow(PlayerNotFoundException::new);
+        Player player = playerRepositoryJpa.findById(id).orElseThrow(PlayerNotFoundException::new);
         ServiceRepositoryMapper.mapToPlayer(updatePlayerDto, player);
-        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto((playerRepository.update(player)));
+        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto((playerRepositoryJpa.save(player)));
         return ControllerServiceMapper.mapToPutPlayerResponse(playerDto);
     }
 
     @Override
     public void delete(Long id) {
-        playerRepository.deleteById(id);
+        playerRepositoryJpa.deleteById(id);
     }
 }

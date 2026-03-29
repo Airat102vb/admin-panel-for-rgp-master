@@ -6,7 +6,7 @@ import com.example.demo.controller.dto.PostPlayerResponse;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
 import com.example.demo.mapper.ControllerServiceMapper;
-import com.example.demo.repository.PlayerRepository;
+import com.example.demo.repository.PlayerRepositoryJpa;
 import com.example.demo.repository.entity.Player;
 import com.example.demo.service.PlayerService;
 import com.example.demo.service.PlayerServiceImpl;
@@ -34,7 +34,7 @@ public class PlayerServiceTest {
     PlayerService playerService;
 
     @MockitoBean
-    PlayerRepository playerRepository;
+    PlayerRepositoryJpa playerRepositoryJpa;
 
     @Autowired
     private PlayerServiceImpl playerServiceImpl;
@@ -42,7 +42,7 @@ public class PlayerServiceTest {
     @Test
     public void createPlayerTest() {
         Player player = getPlayer();
-        Mockito.when(playerRepository.insert(Mockito.any(Player.class))).thenReturn(player);
+        Mockito.when(playerRepositoryJpa.save(Mockito.any(Player.class))).thenReturn(player);
 
         CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
         createPlayerRequest.setBirthday(birthDay);
@@ -65,7 +65,7 @@ public class PlayerServiceTest {
     @Test
     public void findPlayerTest() {
         Player player = getPlayer();
-        Mockito.when(playerRepository.findById(eq(1L))).thenReturn(Optional.of(player));
+        Mockito.when(playerRepositoryJpa.findById(eq(1L))).thenReturn(Optional.of(player));
 
         GetPlayersResponse playersResponse = playerService.findPlayer(1L);
 
