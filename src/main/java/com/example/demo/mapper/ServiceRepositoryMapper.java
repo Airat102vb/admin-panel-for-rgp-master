@@ -75,41 +75,6 @@ public class ServiceRepositoryMapper {
         return selectPlayers;
     }
 
-    public static void mapToPlayer(UpdatePlayerDto updatePlayerDto, Player player) {
-        if (Objects.nonNull(updatePlayerDto.getName())) {
-            player.setName(updatePlayerDto.getName());
-        }
-
-        if (Objects.nonNull(updatePlayerDto.getTitle())) {
-            player.setTitle(updatePlayerDto.getTitle());
-        }
-
-        if (Objects.nonNull(updatePlayerDto.getRace())) {
-            player.setRace(updatePlayerDto.getRace());
-        }
-
-        if (Objects.nonNull(updatePlayerDto.getProfession())) {
-            player.setProfession(updatePlayerDto.getProfession());
-        }
-
-        if (Objects.nonNull(updatePlayerDto.getBirthday())) {
-            player.setBirthday(convertLongToLocalDate(updatePlayerDto.getBirthday()));
-        }
-
-        if (Objects.nonNull(updatePlayerDto.getBanned())) {
-            player.setBanned(updatePlayerDto.getBanned());
-        }
-
-        if (Objects.nonNull(updatePlayerDto.getExperience())) {
-            player.setExperience(updatePlayerDto.getExperience());
-        }
-
-        if (Objects.nonNull(updatePlayerDto.getExperience())) {
-            player.setLevel(calculateLevel(updatePlayerDto.getExperience()));
-            player.setUntilNextLevel(calculateUntilNextLevel(player.getLevel(), updatePlayerDto.getExperience()));
-        }
-    }
-
     public static PlayerDto mapToPlayerDto(Player player) {
         PlayerDto playerDto = new PlayerDto();
 

@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.controller.dto.*;
 import com.example.demo.mapper.ControllerServiceMapper;
 import com.example.demo.service.PlayerService;
+import com.example.demo.service.dto.PlayerDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,11 @@ public class PlayerController {
 
     @GetMapping
     public List<GetPlayersResponse> getPlayers(@ModelAttribute GetPlayersRequest getPlayersRequest) {
-        return playerService.findPlayers(ControllerServiceMapper.mapToGetPlayersDto(getPlayersRequest));
+        List<PlayerDto> playerDtos = playerService.findPlayers(ControllerServiceMapper.mapToGetPlayersDto(getPlayersRequest));
+        return playerDtos
+                .stream()
+                .map(ControllerServiceMapper::mapToGetPlayersResponse)
+                .toList();
     }
 
     @GetMapping("/count")
@@ -35,17 +40,20 @@ public class PlayerController {
 
     @PostMapping("/")
     public PostPlayerResponse createPlayer(@Valid @RequestBody CreatePlayerRequest createPlayerRequest) {
-        return playerService.createPlayer(ControllerServiceMapper.mapToCreatePlayerDto(createPlayerRequest));
+        PlayerDto playerDto = playerService.createPlayer(ControllerServiceMapper.mapToCreatePlayerDto(createPlayerRequest));
+        return ControllerServiceMapper.mapToPostPlayerResponse(playerDto);
     }
 
     @GetMapping("/{id}")
     public GetPlayersResponse getPlayer(@PathVariable("id") @Positive(message = "id должно быть положительным числом") Long id) {
-        return playerService.findPlayer(id);
+        PlayerDto playerDto = playerService.findPlayer(id);
+        return ControllerServiceMapper.mapToGetPlayersResponse(playerDto);
     }
 
     @PostMapping("/{id}")
     public PutPlayerResponse updatePlayer(@PathVariable Long id, @RequestBody UpdatePlayerRequest updatePlayerRequest) {
-        return playerService.updatePlayer(id, ControllerServiceMapper.mapToUpdatePlayerDto(updatePlayerRequest));
+        PlayerDto playerDto = playerService.updatePlayer(id, ControllerServiceMapper.mapToUpdatePlayerDto(updatePlayerRequest));
+        return ControllerServiceMapper.mapToPutPlayerResponse(playerDto);
     }
 
     @DeleteMapping("/{id}")

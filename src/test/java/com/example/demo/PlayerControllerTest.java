@@ -1,13 +1,15 @@
 package com.example.demo;
 
 import com.example.demo.controller.PlayerController;
-import com.example.demo.controller.dto.*;
+import com.example.demo.controller.dto.CreatePlayerRequest;
+import com.example.demo.controller.dto.PutPlayerResponse;
 import com.example.demo.eception.PlayerNotFoundException;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
 import com.example.demo.service.PlayerService;
 import com.example.demo.service.dto.CreatePlayerDto;
 import com.example.demo.service.dto.GetPlayersDto;
+import com.example.demo.service.dto.PlayerDto;
 import com.example.demo.service.dto.UpdatePlayerDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -78,7 +80,7 @@ public class PlayerControllerTest {
 
     @Test
     public void createPlayerTest() throws Exception {
-        Mockito.when(this.playerService.createPlayer(Mockito.any(CreatePlayerDto.class))).thenReturn(createPostPlayerResponse());
+        Mockito.when(this.playerService.createPlayer(Mockito.any(CreatePlayerDto.class))).thenReturn(playerDto());
 
         CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
         createPlayerRequest.setName("Name");
@@ -108,7 +110,7 @@ public class PlayerControllerTest {
 
     @Test
     public void getPlayerTest() throws Exception {
-        Mockito.when(this.playerService.findPlayer(1L)).thenReturn(createPlayer());
+        Mockito.when(this.playerService.findPlayer(1L)).thenReturn(playerDto());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/rest/players/1"))
                 .andDo(print())
@@ -127,7 +129,7 @@ public class PlayerControllerTest {
 
     @Test
     public void updatePlayerTest() throws Exception {
-        Mockito.when(this.playerService.updatePlayer(eq(1L), Mockito.any(UpdatePlayerDto.class))).thenReturn(createPutPlayerResponse());
+        Mockito.when(this.playerService.updatePlayer(eq(1L), Mockito.any(UpdatePlayerDto.class))).thenReturn(playerDto());
 
         PutPlayerResponse putPlayerResponse = new PutPlayerResponse();
         putPlayerResponse.setName("Name");
@@ -181,53 +183,22 @@ public class PlayerControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
-    private PostPlayerResponse createPostPlayerResponse() {
-        PostPlayerResponse postPlayerResponse = new PostPlayerResponse();
-        postPlayerResponse.setId(1L);
-        postPlayerResponse.setName("Name");
-        postPlayerResponse.setTitle("Title");
-        postPlayerResponse.setRace(Race.ELF);
-        postPlayerResponse.setProfession(Profession.CLERIC);
-        postPlayerResponse.setBirthday(631_929_600_000L);
-        postPlayerResponse.setBanned(false);
-        postPlayerResponse.setLevel(1);
-        postPlayerResponse.setExperience(150);
-        postPlayerResponse.setUntilNextLevel(50);
-        return postPlayerResponse;
+    private PlayerDto playerDto() {
+        PlayerDto playerDto = new PlayerDto();
+        playerDto.setId(1L);
+        playerDto.setName("Name");
+        playerDto.setTitle("Title");
+        playerDto.setRace(Race.ELF);
+        playerDto.setProfession(Profession.CLERIC);
+        playerDto.setBirthday(631_929_600_000L);
+        playerDto.setBanned(false);
+        playerDto.setLevel(1);
+        playerDto.setExperience(150);
+        playerDto.setUntilNextLevel(50);
+        return playerDto;
     }
 
-    private PutPlayerResponse createPutPlayerResponse() {
-        PutPlayerResponse putPlayerResponse = new PutPlayerResponse();
-        putPlayerResponse.setId(1L);
-        putPlayerResponse.setName("Name");
-        putPlayerResponse.setTitle("Title");
-        putPlayerResponse.setRace(Race.ELF);
-        putPlayerResponse.setProfession(Profession.CLERIC);
-        putPlayerResponse.setBirthday(631_929_600_000L);
-        putPlayerResponse.setBanned(false);
-        putPlayerResponse.setLevel(1);
-        putPlayerResponse.setExperience(150);
-        putPlayerResponse.setUntilNextLevel(50);
-        return putPlayerResponse;
-    }
-
-    private GetPlayersResponse createPlayer() {
-        GetPlayersResponse playersResponse = new GetPlayersResponse();
-        playersResponse.setId(1L);
-        playersResponse.setName("Name");
-        playersResponse.setTitle("Title");
-        playersResponse.setRace(Race.ELF);
-        playersResponse.setProfession(Profession.CLERIC);
-        playersResponse.setBirthday(631_929_600_000L);
-        playersResponse.setBanned(false);
-        playersResponse.setLevel(1);
-        playersResponse.setExperience(150);
-        playersResponse.setUntilNextLevel(50);
-
-        return playersResponse;
-    }
-
-    private List<GetPlayersResponse> getPlayers() {
-        return List.of(createPlayer(), createPlayer());
+    private List<PlayerDto> getPlayers() {
+        return List.of(playerDto(), playerDto());
     }
 }

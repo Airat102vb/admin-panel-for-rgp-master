@@ -1,8 +1,6 @@
 package com.example.demo;
 
 import com.example.demo.controller.dto.CreatePlayerRequest;
-import com.example.demo.controller.dto.GetPlayersResponse;
-import com.example.demo.controller.dto.PostPlayerResponse;
 import com.example.demo.filter.Profession;
 import com.example.demo.filter.Race;
 import com.example.demo.mapper.ControllerServiceMapper;
@@ -10,6 +8,7 @@ import com.example.demo.repository.PlayerRepositoryJpa;
 import com.example.demo.repository.entity.Player;
 import com.example.demo.service.PlayerService;
 import com.example.demo.service.PlayerServiceImpl;
+import com.example.demo.service.dto.PlayerDto;
 import com.example.demo.utils.CommonUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,20 +45,20 @@ public class PlayerServiceTest {
 
         CreatePlayerRequest createPlayerRequest = new CreatePlayerRequest();
         createPlayerRequest.setBirthday(birthDay);
-        PostPlayerResponse postPlayerResponse = playerServiceImpl
+        PlayerDto playerDto = playerServiceImpl
                 .createPlayer(ControllerServiceMapper.mapToCreatePlayerDto(createPlayerRequest));
 
-        Assertions.assertThat(postPlayerResponse).isNotNull();
-        Assertions.assertThat(postPlayerResponse.getId()).isEqualTo(player.getId());
-        Assertions.assertThat(postPlayerResponse.getName()).isEqualTo(player.getName());
-        Assertions.assertThat(postPlayerResponse.getTitle()).isEqualTo(player.getTitle());
-        Assertions.assertThat(postPlayerResponse.getRace()).isEqualTo(player.getRace());
-        Assertions.assertThat(postPlayerResponse.getProfession()).isEqualTo(player.getProfession());
-        Assertions.assertThat(postPlayerResponse.getBirthday()).isEqualTo(CommonUtils.convertLocalDateToMillis(player.getBirthday()));
-        Assertions.assertThat(postPlayerResponse.getBanned()).isEqualTo(player.getBanned());
-        Assertions.assertThat(postPlayerResponse.getLevel()).isEqualTo(player.getLevel());
-        Assertions.assertThat(postPlayerResponse.getExperience()).isEqualTo(player.getExperience());
-        Assertions.assertThat(postPlayerResponse.getUntilNextLevel()).isEqualTo(player.getUntilNextLevel());
+        Assertions.assertThat(playerDto).isNotNull();
+        Assertions.assertThat(playerDto.getId()).isEqualTo(player.getId());
+        Assertions.assertThat(playerDto.getName()).isEqualTo(player.getName());
+        Assertions.assertThat(playerDto.getTitle()).isEqualTo(player.getTitle());
+        Assertions.assertThat(playerDto.getRace()).isEqualTo(player.getRace());
+        Assertions.assertThat(playerDto.getProfession()).isEqualTo(player.getProfession());
+        Assertions.assertThat(playerDto.getBirthday()).isEqualTo(CommonUtils.convertLocalDateToMillis(player.getBirthday()));
+        Assertions.assertThat(playerDto.getBanned()).isEqualTo(player.getBanned());
+        Assertions.assertThat(playerDto.getLevel()).isEqualTo(player.getLevel());
+        Assertions.assertThat(playerDto.getExperience()).isEqualTo(player.getExperience());
+        Assertions.assertThat(playerDto.getUntilNextLevel()).isEqualTo(player.getUntilNextLevel());
     }
 
     @Test
@@ -67,19 +66,19 @@ public class PlayerServiceTest {
         Player player = getPlayer();
         Mockito.when(playerRepositoryJpa.findById(eq(1L))).thenReturn(Optional.of(player));
 
-        GetPlayersResponse playersResponse = playerService.findPlayer(1L);
+        PlayerDto playerDto = playerService.findPlayer(1L);
 
-        Assertions.assertThat(playersResponse).isNotNull();
-        Assertions.assertThat(playersResponse.getId()).isEqualTo(player.getId());
-        Assertions.assertThat(playersResponse.getName()).isEqualTo(player.getName());
-        Assertions.assertThat(playersResponse.getTitle()).isEqualTo(player.getTitle());
-        Assertions.assertThat(playersResponse.getRace()).isEqualTo(player.getRace());
-        Assertions.assertThat(playersResponse.getProfession()).isEqualTo(player.getProfession());
-        Assertions.assertThat(playersResponse.getBirthday()).isEqualTo(CommonUtils.convertLocalDateToMillis(player.getBirthday()));
-        Assertions.assertThat(playersResponse.getBanned()).isEqualTo(player.getBanned());
-        Assertions.assertThat(playersResponse.getLevel()).isEqualTo(player.getLevel());
-        Assertions.assertThat(playersResponse.getExperience()).isEqualTo(player.getExperience());
-        Assertions.assertThat(playersResponse.getUntilNextLevel()).isEqualTo(player.getUntilNextLevel());
+        Assertions.assertThat(playerDto).isNotNull();
+        Assertions.assertThat(playerDto.getId()).isEqualTo(player.getId());
+        Assertions.assertThat(playerDto.getName()).isEqualTo(player.getName());
+        Assertions.assertThat(playerDto.getTitle()).isEqualTo(player.getTitle());
+        Assertions.assertThat(playerDto.getRace()).isEqualTo(player.getRace());
+        Assertions.assertThat(playerDto.getProfession()).isEqualTo(player.getProfession());
+        Assertions.assertThat(playerDto.getBirthday()).isEqualTo(CommonUtils.convertLocalDateToMillis(player.getBirthday()));
+        Assertions.assertThat(playerDto.getBanned()).isEqualTo(player.getBanned());
+        Assertions.assertThat(playerDto.getLevel()).isEqualTo(player.getLevel());
+        Assertions.assertThat(playerDto.getExperience()).isEqualTo(player.getExperience());
+        Assertions.assertThat(playerDto.getUntilNextLevel()).isEqualTo(player.getUntilNextLevel());
     }
 
     private Player getPlayer() {

@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import com.example.demo.controller.dto.GetPlayersResponse;
-import com.example.demo.controller.dto.PostPlayerResponse;
 import com.example.demo.controller.dto.PutPlayerResponse;
 import com.example.demo.eception.PlayerNotFoundException;
 import com.example.demo.mapper.ControllerServiceMapper;
@@ -21,10 +20,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
-import static com.example.demo.utils.CommonUtils.calculateLevel;
-import static com.example.demo.utils.CommonUtils.calculateUntilNextLevel;
+import static com.example.demo.utils.CommonUtils.*;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
@@ -37,7 +36,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public PostPlayerResponse createPlayer(CreatePlayerDto createPlayerDto) { // return PlayerDto
+    public PlayerDto createPlayer(CreatePlayerDto createPlayerDto) { // return PlayerDto
         int level = calculateLevel(createPlayerDto.getExperience());
         int untilNextLevel = calculateUntilNextLevel(level, createPlayerDto.getExperience());
 
@@ -45,12 +44,11 @@ public class PlayerServiceImpl implements PlayerService {
         newPlayer.setLevel(level);
         newPlayer.setUntilNextLevel(untilNextLevel);
         Player savedPlayer = playerRepositoryJpa.save(newPlayer);
-        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto(savedPlayer);
-        return ControllerServiceMapper.mapToPostPlayerResponse(playerDto);
+        return ServiceRepositoryMapper.mapToPlayerDto(savedPlayer);
     }
 
     @Override
-    public List<GetPlayersResponse> findPlayers(GetPlayersDto getPlayersDto) { //TODO return List<PlayerDto>
+    public List<PlayerDto> findPlayers(GetPlayersDto getPlayersDto) { //TODO return List<PlayerDto>
         Specification<Player> searchSpec = UserSpecification.of(getPlayersDto);
 
         Pageable pageable = PageRequest.of(
@@ -64,7 +62,6 @@ public class PlayerServiceImpl implements PlayerService {
         return players
                 .stream()
                 .map(ServiceRepositoryMapper::mapToPlayerDto)
-                .map(ControllerServiceMapper::mapToGetPlayersResponse)
                 .toList();
     }
 
@@ -75,27 +72,60 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public GetPlayersResponse findPlayer(Long id) { // return PlayerDto
+    public PlayerDto findPlayer(Long id) { // return PlayerDto
         Optional<Player> player = playerRepositoryJpa.findById(id);
 
         if (player.isEmpty()) {
             throw new PlayerNotFoundException();
         }
-
-        return ControllerServiceMapper
-                .mapToGetPlayersResponse(ServiceRepositoryMapper.mapToPlayerDto(player.get()));
+        return ServiceRepositoryMapper.mapToPlayerDto(player.get());
     }
 
     @Override
-    public PutPlayerResponse updatePlayer(Long id, UpdatePlayerDto updatePlayerDto) { // return PlayerDto
+    public PlayerDto updatePlayer(Long id, UpdatePlayerDto updatePlayerDto) { // return PlayerDto
         Player player = playerRepositoryJpa.findById(id).orElseThrow(PlayerNotFoundException::new);
-        ServiceRepositoryMapper.mapToPlayer(updatePlayerDto, player); //TODO это не маппер
-        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto((playerRepositoryJpa.save(player))); //вынести ave  отдельнуюпеременную
-        return ControllerServiceMapper.mapToPutPlayerResponse(playerDto);
+        fillPlayer(updatePlayerDto, player);
+        Player savedPlayer = playerRepositoryJpa.save(player);
+        return ServiceRepositoryMapper.mapToPlayerDto((savedPlayer));
     }
 
     @Override
     public void delete(Long id) {
         playerRepositoryJpa.deleteById(id);
+    }
+
+    private static void fillPlayer(UpdatePlayerDto updatePlayerDto, Player player) {
+        if (Objects.nonNull(updatePlayerDto.getName())) {
+            player.setName(updatePlayerDto.getName());
+        }
+
+        if (Objects.nonNull(updatePlayerDto.getTitle())) {
+            player.setTitle(updatePlayerDto.getTitle());
+        }
+
+        if (Objects.nonNull(updatePlayerDto.getRace())) {
+            player.setRace(updatePlayerDto.getRace());
+        }
+
+        if (Objects.nonNull(updatePlayerDto.getProfession())) {
+            player.setProfession(updatePlayerDto.getProfession());
+        }
+
+        if (Objects.nonNull(updatePlayerDto.getBirthday())) {
+            player.setBirthday(convertLongToLocalDate(updatePlayerDto.getBirthday()));
+        }
+
+        if (Objects.nonNull(updatePlayerDto.getBanned())) {
+            player.setBanned(updatePlayerDto.getBanned());
+        }
+
+        if (Objects.nonNull(updatePlayerDto.getExperience())) {
+            player.setExperience(updatePlayerDto.getExperience());
+        }
+
+        if (Objects.nonNull(updatePlayerDto.getExperience())) {
+            player.setLevel(calculateLevel(updatePlayerDto.getExperience()));
+            player.setUntilNextLevel(calculateUntilNextLevel(player.getLevel(), updatePlayerDto.getExperience()));
+        }
     }
 }
