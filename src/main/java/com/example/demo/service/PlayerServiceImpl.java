@@ -37,20 +37,20 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public PostPlayerResponse createPlayer(CreatePlayerDto createPlayerDto) {
+    public PostPlayerResponse createPlayer(CreatePlayerDto createPlayerDto) { // return PlayerDto
         int level = calculateLevel(createPlayerDto.getExperience());
         int untilNextLevel = calculateUntilNextLevel(level, createPlayerDto.getExperience());
 
         Player newPlayer = ServiceRepositoryMapper.mapToPlayer(createPlayerDto);
         newPlayer.setLevel(level);
         newPlayer.setUntilNextLevel(untilNextLevel);
-
-        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto(playerRepositoryJpa.save(newPlayer));
+        Player savedPlayer = playerRepositoryJpa.save(newPlayer);
+        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto(savedPlayer);
         return ControllerServiceMapper.mapToPostPlayerResponse(playerDto);
     }
 
     @Override
-    public List<GetPlayersResponse> findPlayers(GetPlayersDto getPlayersDto) {
+    public List<GetPlayersResponse> findPlayers(GetPlayersDto getPlayersDto) { //TODO return List<PlayerDto>
         Specification<Player> searchSpec = UserSpecification.of(getPlayersDto);
 
         Pageable pageable = PageRequest.of(
@@ -75,7 +75,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public GetPlayersResponse findPlayer(Long id) {
+    public GetPlayersResponse findPlayer(Long id) { // return PlayerDto
         Optional<Player> player = playerRepositoryJpa.findById(id);
 
         if (player.isEmpty()) {
@@ -87,10 +87,10 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public PutPlayerResponse updatePlayer(Long id, UpdatePlayerDto updatePlayerDto) {
+    public PutPlayerResponse updatePlayer(Long id, UpdatePlayerDto updatePlayerDto) { // return PlayerDto
         Player player = playerRepositoryJpa.findById(id).orElseThrow(PlayerNotFoundException::new);
-        ServiceRepositoryMapper.mapToPlayer(updatePlayerDto, player);
-        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto((playerRepositoryJpa.save(player)));
+        ServiceRepositoryMapper.mapToPlayer(updatePlayerDto, player); //TODO это не маппер
+        PlayerDto playerDto = ServiceRepositoryMapper.mapToPlayerDto((playerRepositoryJpa.save(player))); //вынести ave  отдельнуюпеременную
         return ControllerServiceMapper.mapToPutPlayerResponse(playerDto);
     }
 

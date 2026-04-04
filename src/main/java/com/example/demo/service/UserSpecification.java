@@ -17,8 +17,7 @@ public class UserSpecification {
                 .and(hasDatesRange(getPlayersDto))
                 .and(hasBanned(getPlayersDto))
                 .and(hasExperience(getPlayersDto))
-                .and(hasLevel(getPlayersDto))
-                ;
+                .and(hasLevel(getPlayersDto));
     }
 
     private static Specification<Player> hasName(GetPlayersDto getPlayersDto) {
@@ -38,7 +37,7 @@ public class UserSpecification {
 
     private static Specification<Player> hasProfession(GetPlayersDto getPlayersDto) {
         return getPlayersDto.getProfession() == null ? null : (root, query, cb) ->
-                cb.equal(root.get("profession"), getPlayersDto.getRace());
+                cb.equal(root.get("profession"), getPlayersDto.getProfession());
     }
 
     private static Specification<Player> hasBanned(GetPlayersDto getPlayersDto) {
@@ -47,54 +46,45 @@ public class UserSpecification {
     }
 
     private static Specification<Player> hasDatesRange(GetPlayersDto getPlayersDto) {
-        Specification<Player> specification = null;
+        Specification<Player> specification = Specification.where(null);
 
-        if (getPlayersDto.getAfter() != null && getPlayersDto.getBefore() != null) {
-            specification = ((root, query, cb) ->
-                    cb.between(
-                            root.get("birthday"),
-                            CommonUtils.convertLongToLocalDate(getPlayersDto.getAfter()),
-                            CommonUtils.convertLongToLocalDate(getPlayersDto.getBefore()))
-            );
-        } else if (getPlayersDto.getAfter() != null) {
-            specification = ((root, query, cb) ->
+        if (getPlayersDto.getAfter() != null) {
+            specification = specification.and((root, query, cb) ->
                     cb.greaterThan(root.get("birthday"), CommonUtils.convertLongToLocalDate(getPlayersDto.getAfter())));
-        } else if (getPlayersDto.getBefore() != null) {
-            specification = ((root, query, cb) ->
+        }
+
+        if (getPlayersDto.getBefore() != null) {
+            specification = specification.and((root, query, cb) ->
                     cb.lessThan(root.get("birthday"), CommonUtils.convertLongToLocalDate(getPlayersDto.getBefore())));
         }
         return specification;
     }
 
     private static Specification<Player> hasExperience(GetPlayersDto getPlayersDto) {
-        Specification<Player> specification = null;
+        Specification<Player> specification = Specification.where(null);
 
-        if (getPlayersDto.getMinExperience() != null && getPlayersDto.getMaxExperience() != null) {
-            specification = ((root, query, cb) ->
-                    cb.between(root.get("experience"), getPlayersDto.getMinExperience(), getPlayersDto.getMaxExperience())
-            );
-        } else if (getPlayersDto.getMinExperience() != null) {
-            specification = ((root, query, cb) ->
+        if (getPlayersDto.getMinExperience() != null) {
+            specification = specification.and((root, query, cb) ->
                     cb.greaterThan(root.get("experience"), getPlayersDto.getMinExperience()));
-        } else if (getPlayersDto.getMaxExperience() != null) {
-            specification = ((root, query, cb) ->
+        }
+
+        if (getPlayersDto.getMaxExperience() != null) {
+            specification = specification.and((root, query, cb) ->
                     cb.lessThan(root.get("experience"), getPlayersDto.getMaxExperience()));
         }
         return specification;
     }
 
     private static Specification<Player> hasLevel(GetPlayersDto getPlayersDto) {
-        Specification<Player> specification = null;
+        Specification<Player> specification = Specification.where(null);
 
-        if (getPlayersDto.getMinLevel() != null && getPlayersDto.getMaxLevel() != null) {
-            specification = ((root, query, cb) ->
-                    cb.between(root.get("level"), getPlayersDto.getMinExperience(), getPlayersDto.getMaxExperience())
-            );
-        } else if (getPlayersDto.getMinLevel() != null) {
-            specification = ((root, query, cb) ->
+        if (getPlayersDto.getMinLevel() != null) {
+            specification = specification.and((root, query, cb) ->
                     cb.greaterThan(root.get("level"), getPlayersDto.getMinLevel()));
-        } else if (getPlayersDto.getMaxLevel() != null) {
-            specification = ((root, query, cb) ->
+        }
+
+        if (getPlayersDto.getMaxLevel() != null) {
+            specification = specification.and((root, query, cb) ->
                     cb.lessThan(root.get("level"), getPlayersDto.getMaxLevel()));
         }
         return specification;
