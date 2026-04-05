@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.controller.dto.*;
 import com.example.demo.mapper.ControllerServiceMapper;
 import com.example.demo.service.PlayerService;
+import com.example.demo.service.dto.AverageValuesDto;
 import com.example.demo.service.dto.PlayerDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -59,5 +60,11 @@ public class PlayerController {
     @DeleteMapping("/{id}")
     public void deletePlayer(@PathVariable Long id) {
         playerService.delete(id);
+    }
+
+    @GetMapping("/averages")
+    public GetAveragesResponse getAverageValues() {
+        AverageValuesDto averageValuesDto = playerService.getAverageValues();
+        return ControllerServiceMapper.mapToGetAveragesResponse(averageValuesDto);
     }
 }

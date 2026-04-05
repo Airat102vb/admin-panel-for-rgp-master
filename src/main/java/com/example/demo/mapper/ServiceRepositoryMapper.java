@@ -1,11 +1,9 @@
 package com.example.demo.mapper;
 
 import com.example.demo.repository.entity.Player;
+import com.example.demo.repository.entity.PlayerDataAverages;
 import com.example.demo.repository.entity.SelectPlayers;
-import com.example.demo.service.dto.CreatePlayerDto;
-import com.example.demo.service.dto.GetPlayersDto;
-import com.example.demo.service.dto.PlayerDto;
-import com.example.demo.service.dto.UpdatePlayerDto;
+import com.example.demo.service.dto.*;
 
 import java.util.Objects;
 
@@ -90,5 +88,12 @@ public class ServiceRepositoryMapper {
         playerDto.setUntilNextLevel(player.getUntilNextLevel());
 
         return playerDto;
+    }
+
+    public static AverageValuesDto mapToAverageValuesDto(PlayerDataAverages playerDataAverages) {
+        AverageValuesDto averageValuesDto = new AverageValuesDto();
+        averageValuesDto.setExperienceAverage(playerDataAverages.getExperienceAverage());
+        averageValuesDto.setLevelAverage(playerDataAverages.getLevelAverage());
+        return averageValuesDto;
     }
 }

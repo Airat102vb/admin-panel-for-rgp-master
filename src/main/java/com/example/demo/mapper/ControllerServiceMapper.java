@@ -1,10 +1,7 @@
 package com.example.demo.mapper;
 
 import com.example.demo.controller.dto.*;
-import com.example.demo.service.dto.CreatePlayerDto;
-import com.example.demo.service.dto.GetPlayersDto;
-import com.example.demo.service.dto.PlayerDto;
-import com.example.demo.service.dto.UpdatePlayerDto;
+import com.example.demo.service.dto.*;
 
 public class ControllerServiceMapper {
 
@@ -103,5 +100,12 @@ public class ControllerServiceMapper {
         postPlayerResponse.setUntilNextLevel(playerDto.getUntilNextLevel());
 
         return postPlayerResponse;
+    }
+
+    public static GetAveragesResponse mapToGetAveragesResponse(AverageValuesDto averageValuesDto) {
+        GetAveragesResponse getAveragesResponse = new GetAveragesResponse();
+        getAveragesResponse.setExperienceAverage(averageValuesDto.getExperienceAverage());
+        getAveragesResponse.setLevelAverage(averageValuesDto.getLevelAverage());
+        return getAveragesResponse;
     }
 }

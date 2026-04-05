@@ -74,6 +74,8 @@ function loadContent(root, suffix, currentPage) {
         table.appendChild(tr);
     }
     window.scrollTo(500, 100);
+
+    getAverages(root, suffix);
 }
 
 function Get(requestUrl) {
@@ -417,6 +419,17 @@ function processCreate(root) {
 function processDelete(root, id) {
     Delete(root + "/rest/players/" + id);
     processSearch(root, 1);
+}
+
+function getAverages(root, suffix) {
+    let response = Get(root + "/rest/players/averages" + suffix);
+
+    if (response.status === 200) {
+        let averages = JSON.parse(response.responseText);
+
+        document.getElementById("avg-exp").innerText = averages.experienceAverage || 0;
+        document.getElementById("avg-lvl").innerText = averages.levelAverage || 0;
+    }
 }
 
     

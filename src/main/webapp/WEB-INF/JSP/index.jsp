@@ -54,6 +54,11 @@
             <option>Birthday</option>
         </select>
 
+        <label style="margin-left: 20px; font-weight: bold;">Averages: </label>
+        <span style="margin-left: 10px;">
+            Exp: <span id="avg-exp" class="badge badge-secondary">0</span>
+            Level: <span id="avg-lvl" class="badge badge-secondary">0</span>
+         </span>
 
         <select style="float: right" onchange="processSearch('${pageContext.request.contextPath}', 1)" style="margin-left: 5px" id="limit"
                 class="form-control-sm">

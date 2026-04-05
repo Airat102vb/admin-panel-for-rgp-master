@@ -1,16 +1,11 @@
 package com.example.demo.service;
 
-import com.example.demo.controller.dto.GetPlayersResponse;
-import com.example.demo.controller.dto.PutPlayerResponse;
 import com.example.demo.eception.PlayerNotFoundException;
-import com.example.demo.mapper.ControllerServiceMapper;
 import com.example.demo.mapper.ServiceRepositoryMapper;
 import com.example.demo.repository.PlayerRepositoryJpa;
 import com.example.demo.repository.entity.Player;
-import com.example.demo.service.dto.CreatePlayerDto;
-import com.example.demo.service.dto.GetPlayersDto;
-import com.example.demo.service.dto.PlayerDto;
-import com.example.demo.service.dto.UpdatePlayerDto;
+import com.example.demo.repository.entity.PlayerDataAverages;
+import com.example.demo.service.dto.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,7 +31,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public PlayerDto createPlayer(CreatePlayerDto createPlayerDto) { // return PlayerDto
+    public PlayerDto createPlayer(CreatePlayerDto createPlayerDto) {
         int level = calculateLevel(createPlayerDto.getExperience());
         int untilNextLevel = calculateUntilNextLevel(level, createPlayerDto.getExperience());
 
@@ -48,7 +43,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public List<PlayerDto> findPlayers(GetPlayersDto getPlayersDto) { //TODO return List<PlayerDto>
+    public List<PlayerDto> findPlayers(GetPlayersDto getPlayersDto) {
         Specification<Player> searchSpec = UserSpecification.of(getPlayersDto);
 
         Pageable pageable = PageRequest.of(
@@ -72,7 +67,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public PlayerDto findPlayer(Long id) { // return PlayerDto
+    public PlayerDto findPlayer(Long id) {
         Optional<Player> player = playerRepositoryJpa.findById(id);
 
         if (player.isEmpty()) {
@@ -82,7 +77,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public PlayerDto updatePlayer(Long id, UpdatePlayerDto updatePlayerDto) { // return PlayerDto
+    public PlayerDto updatePlayer(Long id, UpdatePlayerDto updatePlayerDto) {
         Player player = playerRepositoryJpa.findById(id).orElseThrow(PlayerNotFoundException::new);
         fillPlayer(updatePlayerDto, player);
         Player savedPlayer = playerRepositoryJpa.save(player);
@@ -92,6 +87,13 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public void delete(Long id) {
         playerRepositoryJpa.deleteById(id);
+    }
+
+    @Override
+    public AverageValuesDto getAverageValues() {
+        PlayerDataAverages playerDataAverages = playerRepositoryJpa.getPlayerDataAverages();
+        AverageValuesDto averageValuesDto = ServiceRepositoryMapper.mapToAverageValuesDto(playerDataAverages);
+        return averageValuesDto;
     }
 
     private static void fillPlayer(UpdatePlayerDto updatePlayerDto, Player player) {
