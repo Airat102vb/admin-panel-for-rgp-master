@@ -3,6 +3,7 @@ package com.example.demo.mapper;
 import com.example.demo.repository.entity.Player;
 import com.example.demo.repository.entity.PlayerDataAverages;
 import com.example.demo.repository.entity.SelectPlayers;
+import com.example.demo.repository.entity.User;
 import com.example.demo.service.dto.*;
 
 import java.util.Objects;
@@ -95,5 +96,30 @@ public class ServiceRepositoryMapper {
         averageValuesDto.setExperienceAverage(playerDataAverages.getExperienceAverage());
         averageValuesDto.setLevelAverage(playerDataAverages.getLevelAverage());
         return averageValuesDto;
+    }
+
+    public static User mapToUserEntity(UserDto userDto) {
+        User user = new User();
+        if (Objects.nonNull(userDto.getId())) {
+            user.setId(userDto.getId());
+        }
+        user.setName(userDto.getName());
+        user.setLogin(userDto.getLogin());
+        user.setEmail(userDto.getEmail());
+        user.setPassword(userDto.getPassword());
+        user.setRegistration(userDto.getRegistration());
+        user.setLastLogin(userDto.getLastLogin());
+        return user;
+    }
+
+    public static UserDto mapToUserEntity(User user) {
+        UserDto userDto = new UserDto();
+        userDto.setId(user.getId());
+        userDto.setName(user.getName());
+        userDto.setLogin(user.getLogin());
+        userDto.setEmail(user.getEmail());
+        userDto.setPassword(user.getPassword());
+        userDto.setRegistration(user.getRegistration());
+        return userDto;
     }
 }

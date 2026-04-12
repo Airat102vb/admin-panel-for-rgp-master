@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -24,9 +25,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @WebMvcTest(PlayerController.class)
+@WithMockUser(username = "admin")
 public class PlayerControllerTest {
 
     @Autowired
@@ -92,6 +95,7 @@ public class PlayerControllerTest {
         createPlayerRequest.setExperience(150);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/rest/players/")
+                        .with(csrf())
                         .header("Content-type", "application/json;charset=UTF-8")
                         .content(objectMapper.writeValueAsString(createPlayerRequest)))
                 .andDo(print())
@@ -141,6 +145,7 @@ public class PlayerControllerTest {
         putPlayerResponse.setExperience(150);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/rest/players/1")
+                        .with(csrf())
                         .header("Content-type", "application/json;charset=UTF-8")
                         .content(objectMapper.writeValueAsString(putPlayerResponse)))
                 .andDo(print())
@@ -159,7 +164,7 @@ public class PlayerControllerTest {
 
     @Test
     public void deletePlayerTest() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/rest/players/1"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/rest/players/1").with(csrf()))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
@@ -177,6 +182,7 @@ public class PlayerControllerTest {
         createPlayerRequest.setName("");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/rest/players/")
+                        .with(csrf())
                         .header("Content-type", "application/json;charset=UTF-8")
                         .content(objectMapper.writeValueAsString(createPlayerRequest)))
                 .andDo(print())

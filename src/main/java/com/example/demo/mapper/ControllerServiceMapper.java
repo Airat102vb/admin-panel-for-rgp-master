@@ -108,4 +108,13 @@ public class ControllerServiceMapper {
         getAveragesResponse.setLevelAverage(averageValuesDto.getLevelAverage());
         return getAveragesResponse;
     }
+
+    public static UserDto mapToUserDto(PostUserRequest user) {
+        UserDto userDto = new UserDto();
+        userDto.setName(user.getName());
+        userDto.setLogin(user.getLogin());
+        userDto.setEmail(user.getEmail());
+        userDto.setPassword(user.getPassword());
+        return userDto;
+    }
 }
