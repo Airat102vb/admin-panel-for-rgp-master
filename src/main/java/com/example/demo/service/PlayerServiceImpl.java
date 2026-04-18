@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.eception.PlayerNotFoundException;
 import com.example.demo.mapper.ServiceRepositoryMapper;
 import com.example.demo.repository.PlayerRepositoryJpa;
+import com.example.demo.repository.entity.Audit;
 import com.example.demo.repository.entity.Player;
 import com.example.demo.repository.entity.PlayerDataAverages;
 import com.example.demo.service.dto.*;
@@ -12,8 +13,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,14 +28,18 @@ import static com.example.demo.utils.CommonUtils.*;
 public class PlayerServiceImpl implements PlayerService {
 
     private PlayerRepositoryJpa playerRepositoryJpa;
+    private AuditService auditService;
 
     @Autowired
-    public PlayerServiceImpl(PlayerRepositoryJpa playerRepositoryJpa) {
+    public PlayerServiceImpl(PlayerRepositoryJpa playerRepositoryJpa, AuditService auditService) {
         this.playerRepositoryJpa = playerRepositoryJpa;
+        this.auditService = auditService;
     }
 
     @Override
     public PlayerDto createPlayer(CreatePlayerDto createPlayerDto) {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+
         int level = calculateLevel(createPlayerDto.getExperience());
         int untilNextLevel = calculateUntilNextLevel(level, createPlayerDto.getExperience());
 
@@ -39,7 +47,9 @@ public class PlayerServiceImpl implements PlayerService {
         newPlayer.setLevel(level);
         newPlayer.setUntilNextLevel(untilNextLevel);
         Player savedPlayer = playerRepositoryJpa.save(newPlayer);
-        return ServiceRepositoryMapper.mapToPlayerDto(savedPlayer);
+        PlayerDto addedPlayerDto = ServiceRepositoryMapper.mapToPlayerDto(savedPlayer);
+        logAudit("User creation: id = %s".formatted(addedPlayerDto.getId()));
+        return addedPlayerDto;
     }
 
     @Override
@@ -53,7 +63,7 @@ public class PlayerServiceImpl implements PlayerService {
         );
 
         Page<Player> players = playerRepositoryJpa.findAll(searchSpec, pageable);
-
+        logAudit("User search");
         return players
                 .stream()
                 .map(ServiceRepositoryMapper::mapToPlayerDto)
@@ -73,6 +83,7 @@ public class PlayerServiceImpl implements PlayerService {
         if (player.isEmpty()) {
             throw new PlayerNotFoundException();
         }
+        logAudit("User find: id = %s".formatted(id));
         return ServiceRepositoryMapper.mapToPlayerDto(player.get());
     }
 
@@ -81,11 +92,14 @@ public class PlayerServiceImpl implements PlayerService {
         Player player = playerRepositoryJpa.findById(id).orElseThrow(PlayerNotFoundException::new);
         fillPlayer(updatePlayerDto, player);
         Player savedPlayer = playerRepositoryJpa.save(player);
-        return ServiceRepositoryMapper.mapToPlayerDto((savedPlayer));
+        PlayerDto updatedPlayerDto = ServiceRepositoryMapper.mapToPlayerDto(savedPlayer);
+        logAudit("User update: id = %s".formatted(id));
+        return updatedPlayerDto;
     }
 
     @Override
     public void delete(Long id) {
+        logAudit("User delete: id = %s".formatted(id));
         playerRepositoryJpa.deleteById(id);
     }
 
@@ -129,5 +143,14 @@ public class PlayerServiceImpl implements PlayerService {
             player.setLevel(calculateLevel(updatePlayerDto.getExperience()));
             player.setUntilNextLevel(calculateUntilNextLevel(player.getLevel(), updatePlayerDto.getExperience()));
         }
+    }
+
+    private void logAudit(String action) {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        auditService.log(Audit.builder()
+                .login(securityContext.getAuthentication().getName())
+                .action(action)
+                .dateTime(LocalDateTime.now())
+                .build());
     }
 }
